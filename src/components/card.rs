@@ -1,4 +1,4 @@
-use iced::{button, Column, Command, Element, Align, Text};
+use iced::{Column, Element, Align, Text};
 
 use crate::db;
 use crate::app::Message;
