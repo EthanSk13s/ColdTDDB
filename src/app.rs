@@ -46,7 +46,7 @@ impl Application for App {
     }
 
     fn title(&self) -> String {
-        String::from("icedPrincess")
+        String::from("ColdTDDB")
     }
     
     fn update(&mut self, message: Message) -> Command<Message> {
