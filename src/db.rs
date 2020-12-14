@@ -1,6 +1,6 @@
-use sqlx::{SqlitePool, SqliteConnection, Connection, Done};
+use sqlx::{SqlitePool};
 use serde::Deserialize;
-use crate::components::CardView;
+use crate::components::{CardListPage, CardButton};
 
 use super::princess;
 
@@ -188,6 +188,23 @@ impl TDDatabase {
             .fetch_one(&self.pool).await?;
 
         Ok(stream)
+    }
+
+    pub async fn get_card_list(self) -> CardListPage {
+        let cards = sqlx::query_as::<_, DbCard>("SELECT * FROM cards")
+            .fetch_all(&self.pool)
+            .await
+            .unwrap();
+
+        let mut buttons = vec![];
+        for card in cards {
+            buttons.push(CardButton::new(card.card_id));
+        }
+
+        let mut card_list = CardListPage::new().unwrap();
+        card_list.get_buttons(buttons);
+
+        card_list
     }
 
     async fn add_card(&self, card: JsonCard) -> Result<(), Error> {

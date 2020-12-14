@@ -1,27 +1,30 @@
 use iced::{
     Container, Command, Application, Element, Column, Length, Text, Align
 };
-use sqlx::SqlitePool;
-use std::rc::Rc;
-use crate::components::CardView;
+
+use crate::components::{CardView, CardListPage};
 use crate::db;
 
 pub struct App {
     db: db::TDDatabase,
-    state: AppState
+    state: AppState,
+    card_list: CardListPage,
 }
 
 #[derive(Debug, Clone)]
 enum AppState {
     Error { error: db::Error },
     CardLoading,
-    CardFound { card: CardView }
+    CardFound { card: CardView },
+    CardList { cards: CardListPage}
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
     DbLoaded(Result<(), db::Error>),
     CardLoaded(Result<CardView, db::Error>),
+    CardPressed(i32),
+    CardsListed(CardListPage)
 }
 
 impl Application for App {
@@ -35,7 +38,8 @@ impl Application for App {
         (
             App {
                 db: tddb,
-                state: AppState::CardLoading
+                state: AppState::CardLoading,
+                card_list: CardListPage::new().unwrap()
             },
             Command::perform(td_clone.init(), Message::DbLoaded)
         )
@@ -61,12 +65,20 @@ impl Application for App {
                 AppState::CardLoading => {
                     self.state = AppState::CardLoading;
 
-                    Command::perform(CardView::new(828, self.db.clone()), Message::CardLoaded)
+                    Command::perform(self.db.clone().get_card_list(), Message::CardsListed)
                 },
                 _ => Command::none()
             }
             Message::DbLoaded(Err(error)) => {
                 self.state = AppState::Error{error};
+                Command::none()
+            }
+            Message::CardPressed(id) => {
+                Command::perform(CardView::new(id, self.db.clone()), Message::CardLoaded)
+            }
+            Message::CardsListed(cards) => {
+                self.state = AppState::CardList{cards};
+
                 Command::none()
             }
         }
@@ -81,7 +93,12 @@ impl Application for App {
                 .align_items(Align::End)
                 .push(card.view()),
             AppState::Error{ error } => Column::new()
-                .push(Text::new("die").size(40))
+                .push(Text::new("die").size(40)),
+            AppState::CardList { cards } => {
+                self.card_list = cards.clone(); 
+                Column::new()
+                .push(self.card_list.view())
+            }
         };
 
         Container::new(content)
