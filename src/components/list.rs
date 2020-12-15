@@ -1,4 +1,8 @@
-use iced::{button, Button, Column, Element, Align, Text, Row, scrollable, Scrollable};
+use iced::{
+    button, Button, Column, Element,
+    Align, Text, Row, scrollable, Scrollable,
+    Length
+};
 
 use crate::db;
 use crate::app::Message;
@@ -81,10 +85,16 @@ impl CardListPage {
             previous_button
         };
 
-        let page_controls = Row::new().push(previous_button).push(next_button);
+        let page_controls = Row::new()
+            .push(previous_button)
+            .push(next_button)
+            .spacing(10);
 
-        content = content.push(page_controls);
+        content = content.width(Length::Fill).height(Length::Fill);
 
-        column.push(content).into()
+        column.push(content)
+            .push(page_controls)
+            .align_items(Align::Center)
+            .into()
     }
 }
