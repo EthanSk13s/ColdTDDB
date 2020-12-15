@@ -1,5 +1,8 @@
+use std::path::Path;
+
 use sqlx::{SqlitePool};
 use serde::Deserialize;
+use iced::{image};
 use crate::components::{CardListPage, CardButton};
 
 use super::princess;
@@ -25,7 +28,8 @@ pub struct DbCard {
     visual_min_awakened: i32,
     vocal_max_awakened: i32,
     dance_max_awakened: i32,
-    visual_max_awakened: i32
+    visual_max_awakened: i32,
+    pub resource_id: String
 }
 
 #[derive(Deserialize)]
@@ -53,7 +57,8 @@ pub struct JsonCard {
     visual_min_awakened: i32,
     vocal_max_awakened: i32,
     dance_max_awakened: i32,
-    visual_max_awakened: i32
+    visual_max_awakened: i32,
+    resource_id: String
 }
 
 #[derive(Deserialize)]
@@ -155,7 +160,8 @@ impl TDDatabase {
                 visual_min_awakened INTEGER,
                 vocal_max_awakened INTEGER,
                 dance_max_awakened INTEGER,
-                visual_max_awakened INTEGER
+                visual_max_awakened INTEGER,
+                resource_id TEXT
             )
             "#
         ).execute(&self.pool).await?;
@@ -192,7 +198,7 @@ impl TDDatabase {
         Ok(stream)
     }
 
-    pub async fn get_card_list(self, offset: i32) -> CardListPage {
+    pub async fn get_card_list(self, offset: i32) -> Result<CardListPage, Error> {
         let cards = sqlx::query_as::<_, DbCard>(
             r#"SELECT * FROM cards
             WHERE card_id > $1
@@ -207,13 +213,28 @@ impl TDDatabase {
 
         let mut buttons = vec![];
         for card in cards {
-            buttons.push(CardButton::new(card.card_id, card.name));
+            let file_path = format!("cache/{}.png", card.resource_id);
+
+            let icon = if Path::new(&file_path).exists() == true {
+                image::Handle::from_path(&file_path)
+            } else {
+                let icon_url = format!(
+                    "https://storage.matsurihi.me/mltd/icon_l/{}_1.png",
+                    card.resource_id
+                );
+                let data = reqwest::get(&icon_url).await?.bytes().await?;
+
+                tokio::fs::write(&file_path, data).await?;
+                image::Handle::from_path(&file_path)
+            };
+
+            buttons.push(CardButton::new(card.card_id, card.name, icon));
         }
 
         let mut card_list = CardListPage::new(offset).unwrap();
         card_list.get_buttons(buttons);
 
-        card_list
+        Ok(card_list)
     }
 
     async fn add_card(&self, card: JsonCard) -> Result<(), Error> {
@@ -222,7 +243,8 @@ impl TDDatabase {
             r#"INSERT INTO cards
         VALUES (
             null, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-            $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
+            $11, $12, $13, $14, $15, $16, $17, $18, $19, $20,
+            $21
         )"#)
             .bind(card.id)
             .bind(card.rarity)
@@ -244,6 +266,7 @@ impl TDDatabase {
             .bind(card.vocal_max_awakened)
             .bind(card.dance_max_awakened)
             .bind(card.visual_max_awakened)
+            .bind(card.resource_id)
             .execute(&self.pool).await?;
     
         Ok(())
@@ -263,7 +286,8 @@ impl TDDatabase {
 #[derive(Debug, Clone)]
 pub enum Error {
     SqlxError,
-    APIError
+    APIError,
+    IoError
 }
 
 impl From<reqwest::Error> for Error {
@@ -279,5 +303,13 @@ impl From<sqlx::Error> for Error {
         dbg!(error);
 
         Error::SqlxError
+    }
+}
+
+impl From<std::io::Error> for Error {
+    fn from(error: std::io::Error) -> Error {
+        dbg!(error);
+
+        Error::IoError
     }
 }

@@ -17,7 +17,7 @@ enum AppState {
     Error { error: db::Error },
     CardLoading,
     CardFound { card: CardView },
-    CardList { cards: CardListPage}
+    CardList { cards: Result<CardListPage, db::Error> }
 }
 
 #[derive(Debug, Clone)]
@@ -25,7 +25,7 @@ pub enum Message {
     DbLoaded(Result<(), db::Error>),
     CardLoaded(Result<CardView, db::Error>),
     CardPressed(i32),
-    CardsListed(CardListPage),
+    CardsListed(Result<CardListPage, db::Error>),
     NextPage,
     PreviousPage
 }
@@ -109,7 +109,7 @@ impl Application for App {
             AppState::Error{ error } => Column::new()
                 .push(Text::new("die").size(40)),
             AppState::CardList { cards } => {
-                self.card_list = cards.clone(); 
+                self.card_list = cards.as_ref().unwrap().clone(); 
                 Column::new()
                 .push(self.card_list.view())
             }

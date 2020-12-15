@@ -1,7 +1,7 @@
 use iced::{
     button, Button, Column, Element,
     Align, Text, Row, scrollable, Scrollable,
-    Length
+    Length, image, Image
 };
 
 use crate::db;
@@ -11,20 +11,31 @@ use crate::app::Message;
 pub struct CardButton {
     name: String,
     id: i32,
-    link: button::State
+    link: button::State,
+    icon: image::Handle
 }
 
 impl CardButton {
-    pub fn new(id: i32, name: String) -> CardButton {
+    pub fn new(id: i32, name: String, icon: image::Handle) -> CardButton {
         CardButton {
-            name: name,
-            id: id,
-            link: button::State::new()
+            name,
+            id,
+            link: button::State::new(),
+            icon
         }
     }
 
     pub fn view(&mut self) -> Element<Message> {
-        let content = Row::new().push(Text::new(self.name.to_owned()));
+        let content = Row::new()
+            .push(
+                Image::new(self.icon.clone())
+                .width(Length::Units(50))
+                .height(Length::Units(50))
+            )
+            .push(
+                Text::new(self.name.to_owned())
+                .size(30)
+            );
         let link_button = Button::new(&mut self.link, content)
             .on_press(Message::CardPressed(self.id));
 
