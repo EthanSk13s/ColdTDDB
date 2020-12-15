@@ -3,22 +3,25 @@ use iced::{button, Button, Column, Element, Align, Text, Row, scrollable, Scroll
 use crate::db;
 use crate::app::Message;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct CardButton {
+    name: String,
     id: i32,
     link: button::State
 }
 
 impl CardButton {
-    pub fn new(id: i32) -> CardButton {
-        CardButton { 
+    pub fn new(id: i32, name: String) -> CardButton {
+        CardButton {
+            name: name,
             id: id,
             link: button::State::new()
         }
     }
 
     pub fn view(&mut self) -> Element<Message> {
-        let link_button = Button::new(&mut self.link, Text::new(self.id.to_string()))
+        let content = Row::new().push(Text::new(self.name.to_owned()));
+        let link_button = Button::new(&mut self.link, content)
             .on_press(Message::CardPressed(self.id));
 
         Row::new()
