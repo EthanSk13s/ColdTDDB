@@ -119,13 +119,15 @@ impl Default for JsonCenter{
 
 #[derive(Clone)]
 pub struct TDDatabase {
-    pub pool: SqlitePool
+    pub pool: SqlitePool,
+    pub limit: i32
 }
 
 impl TDDatabase {
     pub fn new(uri: &str) -> Result<Self, sqlx::Error> {
         Ok(TDDatabase {
-            pool: SqlitePool::connect_lazy(&uri).unwrap()
+            pool: SqlitePool::connect_lazy(&uri).unwrap(),
+            limit: 0
         })
     }
 
@@ -190,18 +192,25 @@ impl TDDatabase {
         Ok(stream)
     }
 
-    pub async fn get_card_list(self) -> CardListPage {
-        let cards = sqlx::query_as::<_, DbCard>("SELECT * FROM cards")
-            .fetch_all(&self.pool)
-            .await
-            .unwrap();
+    pub async fn get_card_list(self, offset: i32) -> CardListPage {
+        let cards = sqlx::query_as::<_, DbCard>(
+            r#"SELECT * FROM cards
+            WHERE card_id > $1
+            ORDER BY card_Id
+            LIMIT 25
+            "#
+        )
+        .bind(offset)
+        .fetch_all(&self.pool)
+        .await
+        .unwrap();
 
         let mut buttons = vec![];
         for card in cards {
-            buttons.push(CardButton::new(card.card_id));
+            buttons.push(CardButton::new(card.card_id, card.name));
         }
 
-        let mut card_list = CardListPage::new().unwrap();
+        let mut card_list = CardListPage::new(offset).unwrap();
         card_list.get_buttons(buttons);
 
         card_list

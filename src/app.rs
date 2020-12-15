@@ -9,6 +9,7 @@ pub struct App {
     db: db::TDDatabase,
     state: AppState,
     card_list: CardListPage,
+    offset: i32,
 }
 
 #[derive(Debug, Clone)]
@@ -24,7 +25,9 @@ pub enum Message {
     DbLoaded(Result<(), db::Error>),
     CardLoaded(Result<CardView, db::Error>),
     CardPressed(i32),
-    CardsListed(CardListPage)
+    CardsListed(CardListPage),
+    NextPage,
+    PreviousPage
 }
 
 impl Application for App {
@@ -39,7 +42,8 @@ impl Application for App {
             App {
                 db: tddb,
                 state: AppState::CardLoading,
-                card_list: CardListPage::new().unwrap()
+                card_list: CardListPage::new(0).unwrap(),
+                offset: 0
             },
             Command::perform(td_clone.init(), Message::DbLoaded)
         )
@@ -65,7 +69,7 @@ impl Application for App {
                 AppState::CardLoading => {
                     self.state = AppState::CardLoading;
 
-                    Command::perform(self.db.clone().get_card_list(), Message::CardsListed)
+                    Command::perform(self.db.clone().get_card_list(self.offset), Message::CardsListed)
                 },
                 _ => Command::none()
             }
@@ -80,6 +84,16 @@ impl Application for App {
                 self.state = AppState::CardList{cards};
 
                 Command::none()
+            }
+            Message::NextPage => {
+                self.offset += 25;
+
+                Command::perform(self.db.clone().get_card_list(self.offset), Message::CardsListed)
+            }
+            Message::PreviousPage => {
+                self.offset -= 25;
+
+                Command::perform(self.db.clone().get_card_list(self.offset), Message::CardsListed)
             }
         }
     }
