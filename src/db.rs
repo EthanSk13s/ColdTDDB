@@ -3,7 +3,7 @@ use std::path::Path;
 use sqlx::{SqlitePool};
 use serde::Deserialize;
 use iced::{image};
-use crate::components::{CardListPage, CardButton};
+use crate::components::{CardListPage, CardButton, ListFilters};
 
 use super::princess;
 
@@ -198,18 +198,27 @@ impl TDDatabase {
         Ok(stream)
     }
 
-    pub async fn get_card_list(self, offset: i32) -> Result<CardListPage, Error> {
-        let cards = sqlx::query_as::<_, DbCard>(
+    pub async fn get_card_list(self, current: CardListPage, offset: i32, filter: String) -> Result<CardListPage, Error> {
+        let mut query = format!(
             r#"SELECT * FROM cards
             WHERE card_id > $1
-            ORDER BY card_Id
+            AND rarity IN {}
+            ORDER BY card_id
             LIMIT 25
-            "#
-        )
-        .bind(offset)
-        .fetch_all(&self.pool)
-        .await
-        .unwrap();
+            "#, filter);
+
+        if current.cards.len() != 0 {
+            if current.cards[0].id == offset {
+                query = query.replace(">", "<");
+            }
+        }
+
+        println!("{}", offset.to_string());
+        let cards = sqlx::query_as::<_, DbCard>(&query)
+            .bind(offset)
+            .fetch_all(&self.pool)
+            .await
+            .unwrap();
 
         let mut buttons = vec![];
         let client = reqwest::Client::new();
@@ -232,8 +241,9 @@ impl TDDatabase {
             buttons.push(CardButton::new(card.card_id, card.name, icon));
         }
 
-        let mut card_list = CardListPage::new(offset).unwrap();
+        let mut card_list = current;
         card_list.get_buttons(buttons);
+        card_list.offset = offset;
 
         Ok(card_list)
     }

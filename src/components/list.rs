@@ -1,7 +1,7 @@
 use iced::{
     button, Button, Column, Element,
     Align, Text, Row, scrollable, Scrollable,
-    Length, image, Image
+    Length, image, Image, Checkbox
 };
 
 use crate::db;
@@ -10,7 +10,7 @@ use crate::app::Message;
 #[derive(Debug, Clone)]
 pub struct CardButton {
     name: String,
-    id: i32,
+    pub id: i32,
     link: button::State,
     icon: image::Handle
 }
@@ -35,7 +35,8 @@ impl CardButton {
             .push(
                 Text::new(self.name.to_owned())
                 .size(30)
-            );
+            )
+            .align_items(Align::Center);
         let link_button = Button::new(&mut self.link, content)
             .on_press(Message::CardPressed(self.id));
 
@@ -45,14 +46,67 @@ impl CardButton {
             .into()
     }
 }
+#[derive(Debug, Clone)]
+pub struct ListFilters {
+    pub n_toggle: bool,
+    pub r_toggle: bool,
+    pub sr_toggle: bool,
+    pub ssr_toggle: bool
+}
+
+impl ListFilters {
+    pub fn new() -> ListFilters { 
+        ListFilters {
+            n_toggle: true,
+            r_toggle: true,
+            sr_toggle: true,
+            ssr_toggle: true
+        }
+    }
+    pub fn view(&mut self) -> Element<Message> {
+        let rarity_row = Row::new().push(Text::new("Rarity: "));
+        let n_radio = Checkbox::new(
+            self.n_toggle,
+            "N",
+            Message::ToggleNormalRarity
+        );
+
+        let r_radio = Checkbox::new(
+            self.r_toggle,
+            "R",
+            Message::ToggleRareRarity
+        );
+
+        let sr_radio = Checkbox::new(
+            self.sr_toggle,
+            "SR",
+            Message::ToggleSrRarity
+        );
+
+        let ssr_radio = Checkbox::new(
+            self.ssr_toggle,
+            "SSR",
+            Message::ToggleSsrRarity
+        );
+
+        rarity_row
+            .push(n_radio)
+            .push(r_radio)
+            .push(sr_radio)
+            .push(ssr_radio)
+            .into()
+
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct CardListPage {
     state: scrollable::State,
-    cards: Vec<CardButton>,
+    pub cards: Vec<CardButton>,
     next_button: button::State,
     previous_button: button::State,
-    offset: i32
+    pub offset: i32,
+    pub filter: ListFilters
 }
 
 impl CardListPage {
@@ -64,11 +118,13 @@ impl CardListPage {
             cards: card_buttons,
             next_button: button::State::new(),
             previous_button: button::State::new(),
-            offset
+            offset,
+            filter: ListFilters::new()
         })
     }
 
     pub fn get_buttons(&mut self, cards: Vec<CardButton>) {
+        self.cards.clear();
         self.cards = cards;
     }
 
@@ -102,8 +158,9 @@ impl CardListPage {
             .spacing(10);
 
         content = content.width(Length::Fill).height(Length::Fill);
-
-        column.push(content)
+        column
+            .push(self.filter.view())
+            .push(content)
             .push(page_controls)
             .align_items(Align::Center)
             .into()
