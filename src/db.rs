@@ -212,6 +212,7 @@ impl TDDatabase {
         .unwrap();
 
         let mut buttons = vec![];
+        let client = reqwest::Client::new();
         for card in cards {
             let file_path = format!("cache/{}.png", card.resource_id);
 
@@ -222,7 +223,7 @@ impl TDDatabase {
                     "https://storage.matsurihi.me/mltd/icon_l/{}_1.png",
                     card.resource_id
                 );
-                let data = reqwest::get(&icon_url).await?.bytes().await?;
+                let data = client.get(&icon_url).send().await?.bytes().await?;
 
                 tokio::fs::write(&file_path, data).await?;
                 image::Handle::from_path(&file_path)
