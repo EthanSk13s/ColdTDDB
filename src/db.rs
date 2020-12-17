@@ -198,8 +198,10 @@ impl TDDatabase {
         Ok(stream)
     }
 
-    pub async fn get_card_list(self, current: CardListPage, offset: i32, filter: String) -> Result<CardListPage, Error> {
-        let mut query = format!(
+    pub async fn get_card_list(
+        self, current: CardListPage,
+        offset: i32, filter: String) -> Result<CardListPage, Error> {
+        let query = format!(
             r#"SELECT * FROM cards
             WHERE card_id > $1
             AND rarity IN {}
@@ -207,13 +209,6 @@ impl TDDatabase {
             LIMIT 25
             "#, filter);
 
-        if current.cards.len() != 0 {
-            if current.cards[0].id == offset {
-                query = query.replace(">", "<");
-            }
-        }
-
-        println!("{}", offset.to_string());
         let cards = sqlx::query_as::<_, DbCard>(&query)
             .bind(offset)
             .fetch_all(&self.pool)

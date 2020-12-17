@@ -10,8 +10,10 @@ pub struct App {
     state: AppState,
     card_list: CardListPage,
     offset: i32,
+    previous_offsets: Vec<i32>,
     rarity_filter: Vec<i32>,
     filter: String,
+    min: i32
 }
 
 #[derive(Debug, Clone)]
@@ -64,8 +66,10 @@ impl Application for App {
                 state: AppState::CardLoading,
                 card_list: CardListPage::new(0).unwrap(),
                 offset: 0,
+                previous_offsets: vec![1],
                 rarity_filter: vec![1,2,3,4],
-                filter: String::from("(1,2,3,4)")
+                filter: String::from("(1,2,3,4)"),
+                min: 0
             },
             Command::perform(td_clone.init(), Message::DbLoaded)
         )
@@ -107,13 +111,19 @@ impl Application for App {
                 Command::perform(CardView::new(id, self.db.clone()), Message::CardLoaded)
             }
             Message::CardsListed(cards) => {
+                let min = self.previous_offsets.get(0);
+                self.min = match min {
+                    Some(id) => *id,
+                    None => cards.clone().unwrap().cards[0].id
+                };
+
                 self.state = AppState::CardList{cards};
 
                 Command::none()
             }
             Message::NextPage => {
-                // TODO: Do better pagination, very flawed rn
-                self.offset += 25;
+                self.offset = self.card_list.cards[24].id;
+                self.previous_offsets.push(self.card_list.cards[0].id);
 
                 Command::perform(self.db.clone().get_card_list(
                     self.card_list.clone(),
@@ -122,7 +132,11 @@ impl Application for App {
                     Message::CardsListed)
             }
             Message::PreviousPage => {
-                self.offset -= 25;
+                let value = self.previous_offsets.pop();
+                self.offset = match value {
+                    Some(id) => id - 1,
+                    None => 0
+                };
 
                 Command::perform(self.db.clone().get_card_list(
                     self.card_list.clone(),
@@ -140,6 +154,7 @@ impl Application for App {
 
                 };
                 self.offset = 0;
+                self.min = 0;
                 self.filter = Self::construct_filter(self.rarity_filter.clone());
 
                 Command::perform(self.db.clone().get_card_list(
@@ -157,6 +172,7 @@ impl Application for App {
                     self.card_list.filter.r_toggle = true
                 };
                 self.offset = 0;
+                self.min = 0;
                 self.filter = Self::construct_filter(self.rarity_filter.clone());
 
                 Command::perform(self.db.clone().get_card_list(
@@ -174,6 +190,7 @@ impl Application for App {
                     self.card_list.filter.sr_toggle = true
                 };
                 self.offset = 0;
+                self.min = 0;
                 self.filter = Self::construct_filter(self.rarity_filter.clone());
 
                 Command::perform(self.db.clone().get_card_list(
@@ -191,6 +208,7 @@ impl Application for App {
                     self.card_list.filter.ssr_toggle = true
                 };
                 self.offset = 0;
+                self.min = 0;
                 self.filter = Self::construct_filter(self.rarity_filter.clone());
 
                 Command::perform(
@@ -214,7 +232,8 @@ impl Application for App {
             AppState::Error{ error } => Column::new()
                 .push(Text::new("die").size(40)),
             AppState::CardList { cards } => {
-                self.card_list = cards.as_ref().unwrap().clone(); 
+                self.card_list = cards.as_ref().unwrap().clone();
+                self.card_list.set_min(self.min); 
                 Column::new()
                 .push(self.card_list.view())
             }

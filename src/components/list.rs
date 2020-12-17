@@ -106,7 +106,8 @@ pub struct CardListPage {
     next_button: button::State,
     previous_button: button::State,
     pub offset: i32,
-    pub filter: ListFilters
+    pub filter: ListFilters,
+    pub min: i32
 }
 
 impl CardListPage {
@@ -119,7 +120,8 @@ impl CardListPage {
             next_button: button::State::new(),
             previous_button: button::State::new(),
             offset,
-            filter: ListFilters::new()
+            filter: ListFilters::new(),
+            min: 0
         })
     }
 
@@ -128,9 +130,14 @@ impl CardListPage {
         self.cards = cards;
     }
 
+    pub fn set_min(&mut self, min: i32) {
+        self.min = min;
+    }
+
     pub fn view<'a>(&'a mut self) -> Element<Message> {
         let column = Column::new();
         let mut content = Scrollable::new(&mut self.state);
+        let first_card = self.cards[0].id;
         let size = self.cards.len();
 
         for card in self.cards.iter_mut() {
@@ -145,8 +152,8 @@ impl CardListPage {
         } else {
             next_button
         };
-        
-        previous_button = if self.offset != 0 {
+
+        previous_button = if first_card >= self.min + 1 {
             previous_button.on_press(Message::PreviousPage)
         } else {
             previous_button
