@@ -3,18 +3,19 @@ use std::path::Path;
 use sqlx::{SqlitePool};
 use serde::Deserialize;
 use iced::{image};
-use crate::components::{CardListPage, CardButton, ListFilters};
+use crate::components::{CardListPage, CardButton, CardView};
 
 use super::princess;
 
-#[derive(Debug, Clone, sqlx::FromRow)]
+#[derive(Debug, Clone, Default, sqlx::FromRow)]
 pub struct DbCard {
     id: i32,
     pub card_id: i32,
     idol_id: i32,
     pub name: String,
+    pub rarity: i32,
     idol_type: i8,
-    extra_type: i8,
+    pub extra_type: i8,
     pub skill: String,
     pub center_skill: String,
     pub vocal_min: i32,
@@ -188,14 +189,34 @@ impl TDDatabase {
         Ok(())
     }
 
-    pub async fn get_card(self, card_id: i32) -> Result<DbCard, Error> {
-        let stream = sqlx::query_as::<_, DbCard>(
+    pub async fn get_card(self, card_id: i32) -> Result<CardView, Error> {
+        let card = sqlx::query_as::<_, DbCard>(
             "SELECT * FROM cards WHERE card_id = $1"
         )
-            .bind(card_id)
-            .fetch_one(&self.pool).await?;
+        .bind(card_id)
+        .fetch_one(&self.pool).await?;
 
-        Ok(stream)
+        let bg = if card.rarity > 3 {
+            let file_path = format!("cache/card_bg/{}.png", card.resource_id);
+
+            if Path::new(&file_path).exists() == true {
+                image::Handle::from_path(&file_path)
+            } else {
+                let icon_url = format!(
+                    "https://storage.matsurihi.me/mltd/card_bg/{}_1.png",
+                    card.resource_id
+                );
+                let client = reqwest::Client::new();
+                let data = client.get(&icon_url).send().await?.bytes().await?;
+
+                tokio::fs::write(&file_path, data).await?;
+                image::Handle::from_path(&file_path)
+            }
+        } else {
+            image::Handle::from("")
+        };
+        let view = CardView::new(card, bg);
+        Ok(view)
     }
 
     pub async fn get_card_list(
@@ -218,7 +239,7 @@ impl TDDatabase {
         let mut buttons = vec![];
         let client = reqwest::Client::new();
         for card in cards {
-            let file_path = format!("cache/{}.png", card.resource_id);
+            let file_path = format!("cache/icons/{}.png", card.resource_id);
 
             let icon = if Path::new(&file_path).exists() == true {
                 image::Handle::from_path(&file_path)

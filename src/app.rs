@@ -1,5 +1,5 @@
 use iced::{
-    Container, Command, Application, Element, Column, Length, Text, Align
+    Container, Command, Application, Element, Column, Length, Text, image
 };
 
 use crate::components::{CardView, CardListPage};
@@ -9,6 +9,7 @@ pub struct App {
     db: db::TDDatabase,
     state: AppState,
     card_list: CardListPage,
+    current_card: CardView,
     offset: i32,
     previous_offsets: Vec<i32>,
     rarity_filter: Vec<i32>,
@@ -32,7 +33,8 @@ pub enum Message {
     CardsListed(Result<CardListPage, db::Error>),
     ToggleRarity(bool, i32),
     NextPage,
-    PreviousPage
+    PreviousPage,
+    ReturnToList,
 }
 
 impl App {
@@ -62,6 +64,7 @@ impl Application for App {
                 db: tddb,
                 state: AppState::CardLoading,
                 card_list: CardListPage::new(0).unwrap(),
+                current_card: CardView::new(Default::default(), image::Handle::from("")),
                 offset: 0,
                 previous_offsets: vec![1],
                 rarity_filter: vec![1,2,3,4],
@@ -105,7 +108,7 @@ impl Application for App {
                 Command::none()
             }
             Message::CardPressed(id) => {
-                Command::perform(CardView::new(id, self.db.clone()), Message::CardLoaded)
+                Command::perform(self.db.clone().get_card(id), Message::CardLoaded)
             }
             Message::CardsListed(cards) => {
                 let min = self.previous_offsets.get(0);
@@ -159,6 +162,13 @@ impl Application for App {
                     self.filter.to_owned()),
                     Message::CardsListed)
             }
+            Message::ReturnToList => {
+                Command::perform(self.db.clone().get_card_list(
+                    self.card_list.clone(),
+                    self.offset,
+                    self.filter.to_owned()),
+                    Message::CardsListed)
+            }
         }
     }
 
@@ -167,9 +177,11 @@ impl Application for App {
             AppState::CardLoading => Column::new()
                 .width(Length::Shrink)
                 .push(Text::new("Building and Getting Database").size(40)),
-            AppState::CardFound { card } => Column::new()
-                .align_items(Align::End)
-                .push(card.view()),
+            AppState::CardFound { card } => { 
+                self.current_card = card.clone();
+                Column::new()
+                .push(self.current_card.view())
+            },
             AppState::Error{ error } => Column::new()
                 .push(Text::new("die").size(40)),
             AppState::CardList { cards } => {
