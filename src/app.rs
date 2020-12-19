@@ -30,10 +30,7 @@ pub enum Message {
     CardLoaded(Result<CardView, db::Error>),
     CardPressed(i32),
     CardsListed(Result<CardListPage, db::Error>),
-    ToggleNormalRarity(bool),
-    ToggleRareRarity(bool),
-    ToggleSrRarity(bool),
-    ToggleSsrRarity(bool),
+    ToggleRarity(bool, i32),
     NextPage,
     PreviousPage
 }
@@ -144,79 +141,23 @@ impl Application for App {
                     self.filter.to_owned()),
                     Message::CardsListed)
             }
-            Message::ToggleNormalRarity(toggle) => {
+            Message::ToggleRarity(toggle, rarity) => {
                 if toggle == false {
-                    self.rarity_filter.retain(|&x| x != 1);
-                    self.card_list.filter.n_toggle = false
+                    self.rarity_filter.retain(|&x| x != rarity);
+                    self.card_list.filter.set_state(rarity, toggle)
                 } else {
-                    self.rarity_filter.push(1);
-                    self.card_list.filter.n_toggle = true
-
+                    self.rarity_filter.push(rarity);
+                    self.card_list.filter.set_state(rarity, toggle)
                 };
+
                 self.offset = 0;
                 self.min = 0;
                 self.filter = Self::construct_filter(self.rarity_filter.clone());
-
                 Command::perform(self.db.clone().get_card_list(
                     self.card_list.clone(),
                     self.offset,
                     self.filter.to_owned()),
                     Message::CardsListed)
-            }
-            Message::ToggleRareRarity(toggle) => {
-                if toggle == false {
-                    self.rarity_filter.retain(|&x| x != 2);
-                    self.card_list.filter.r_toggle = false
-                } else {
-                    self.rarity_filter.push(2);
-                    self.card_list.filter.r_toggle = true
-                };
-                self.offset = 0;
-                self.min = 0;
-                self.filter = Self::construct_filter(self.rarity_filter.clone());
-
-                Command::perform(self.db.clone().get_card_list(
-                    self.card_list.clone(),
-                    self.offset, 
-                    self.filter.to_owned()),
-                    Message::CardsListed)
-            }
-            Message::ToggleSrRarity(toggle) => {
-                if toggle == false {
-                    self.rarity_filter.retain(|&x| x != 3);
-                    self.card_list.filter.sr_toggle = false
-                } else {
-                    self.rarity_filter.push(3);
-                    self.card_list.filter.sr_toggle = true
-                };
-                self.offset = 0;
-                self.min = 0;
-                self.filter = Self::construct_filter(self.rarity_filter.clone());
-
-                Command::perform(self.db.clone().get_card_list(
-                    self.card_list.clone(),
-                    self.offset,
-                    self.filter.to_owned()),
-                    Message::CardsListed)
-            }
-            Message::ToggleSsrRarity(toggle) => {
-                if toggle == false {
-                    self.rarity_filter.retain(|&x| x != 4);
-                    self.card_list.filter.ssr_toggle = false
-                } else {
-                    self.rarity_filter.push(4);
-                    self.card_list.filter.ssr_toggle = true
-                };
-                self.offset = 0;
-                self.min = 0;
-                self.filter = Self::construct_filter(self.rarity_filter.to_owned());
-
-                Command::perform(
-                    self.db.clone().get_card_list(
-                        self.card_list.clone(),
-                        self.offset,
-                        self.filter.clone()),
-                        Message::CardsListed)
             }
         }
     }

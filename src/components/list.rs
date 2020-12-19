@@ -60,33 +60,34 @@ impl ListFilters {
             n_toggle: true,
             r_toggle: true,
             sr_toggle: true,
-            ssr_toggle: true
+            ssr_toggle: true,
         }
     }
     pub fn view(&mut self) -> Element<Message> {
         let rarity_row = Row::new().push(Text::new("Rarity: "));
+
         let n_radio = Checkbox::new(
             self.n_toggle,
             "N",
-            Message::ToggleNormalRarity
+            move|toggle| {Message::ToggleRarity(toggle, 1)}
         );
 
         let r_radio = Checkbox::new(
             self.r_toggle,
             "R",
-            Message::ToggleRareRarity
+            move|toggle| {Message::ToggleRarity(toggle, 2)}
         );
 
         let sr_radio = Checkbox::new(
             self.sr_toggle,
             "SR",
-            Message::ToggleSrRarity
+            move|toggle| {Message::ToggleRarity(toggle, 3)}
         );
 
         let ssr_radio = Checkbox::new(
             self.ssr_toggle,
             "SSR",
-            Message::ToggleSsrRarity
+            move|toggle| {Message::ToggleRarity(toggle, 4)}
         );
 
         rarity_row
@@ -96,6 +97,15 @@ impl ListFilters {
             .push(ssr_radio)
             .into()
 
+    }
+    pub fn set_state(&mut self, value: i32, state: bool) {
+        match value {
+            1 => self.n_toggle = state,
+            2 => self.r_toggle = state,
+            3 => self.sr_toggle = state,
+            4 => self.ssr_toggle = state,
+            _ => (),
+        };
     }
 }
 
