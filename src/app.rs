@@ -98,7 +98,7 @@ impl Application for App {
                     Command::perform(self.db.clone().get_card_list(
                         self.card_list.clone(), 
                         self.offset, 
-                        self.filter.clone()), 
+                        self.filter.to_owned()), 
                         Message::CardsListed)
                 },
                 _ => Command::none()
@@ -128,7 +128,7 @@ impl Application for App {
                 Command::perform(self.db.clone().get_card_list(
                     self.card_list.clone(),
                     self.offset, 
-                    self.filter.clone()), 
+                    self.filter.to_owned()), 
                     Message::CardsListed)
             }
             Message::PreviousPage => {
@@ -141,7 +141,7 @@ impl Application for App {
                 Command::perform(self.db.clone().get_card_list(
                     self.card_list.clone(),
                     self.offset,
-                    self.filter.clone()),
+                    self.filter.to_owned()),
                     Message::CardsListed)
             }
             Message::ToggleNormalRarity(toggle) => {
@@ -160,7 +160,7 @@ impl Application for App {
                 Command::perform(self.db.clone().get_card_list(
                     self.card_list.clone(),
                     self.offset,
-                    self.filter.clone()),
+                    self.filter.to_owned()),
                     Message::CardsListed)
             }
             Message::ToggleRareRarity(toggle) => {
@@ -178,7 +178,7 @@ impl Application for App {
                 Command::perform(self.db.clone().get_card_list(
                     self.card_list.clone(),
                     self.offset, 
-                    self.filter.clone()),
+                    self.filter.to_owned()),
                     Message::CardsListed)
             }
             Message::ToggleSrRarity(toggle) => {
@@ -196,7 +196,7 @@ impl Application for App {
                 Command::perform(self.db.clone().get_card_list(
                     self.card_list.clone(),
                     self.offset,
-                    self.filter.clone()),
+                    self.filter.to_owned()),
                     Message::CardsListed)
             }
             Message::ToggleSsrRarity(toggle) => {
@@ -209,7 +209,7 @@ impl Application for App {
                 };
                 self.offset = 0;
                 self.min = 0;
-                self.filter = Self::construct_filter(self.rarity_filter.clone());
+                self.filter = Self::construct_filter(self.rarity_filter.to_owned());
 
                 Command::perform(
                     self.db.clone().get_card_list(

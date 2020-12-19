@@ -153,7 +153,7 @@ impl CardListPage {
             next_button
         };
 
-        previous_button = if first_card >= self.min + 1 {
+        previous_button = if first_card > self.min + 1 {
             previous_button.on_press(Message::PreviousPage)
         } else {
             previous_button
