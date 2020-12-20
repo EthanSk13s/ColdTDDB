@@ -1,5 +1,6 @@
 use iced::{Column, Element, Align, Text, 
-    image, Image, button, Button};
+    image, Image, button, Button, 
+    Row, Length, scrollable, Scrollable};
 
 use crate::db;
 use crate::app::Message;
@@ -17,7 +18,8 @@ pub struct CardView {
     min_visual: i32,
     max_visual: i32,
     bg: image::Handle,
-    back_button: button::State
+    back_button: button::State,
+    scroll: scrollable::State
 }
 
 impl CardView {
@@ -34,26 +36,64 @@ impl CardView {
             min_visual: card.visual_min,
             max_visual: card.visual_max,
             bg,
-            back_button: button::State::new()
+            back_button: button::State::new(),
+            scroll: scrollable::State::new()
         }
     }
 
-    pub fn view<'a>(&'a mut self) -> Element<Message> {
+    pub fn view(&mut self) -> Element<Message> {
+        let content = Scrollable::new(&mut self.scroll)
+            .height(Length::Fill)
+            .width(Length::Fill)
+            .push(
+                Text::new(&self.name)
+                    .size(42)
+            )
+            .push(
+                Text::new(
+                    format!("Vocal: {}", &self.max_vocal.to_string())
+                )
+            )
+            .push(
+                Text::new(
+                    format!("Dance: {}", &self.max_dance.to_string())
+                )
+            )
+            .push(
+                Text::new(
+                    format!("Visual: {}", &self.max_visual.to_string())
+                )
+            )
+            .push(
+                Text::new(
+                    format!("Skill: {}", &self.skill)
+                )
+            )
+            .push(
+                Text::new(
+                    format!("Center Skill: {}", &self.center_skill)
+                )
+            )
+            .push(
+                Image::new(self.bg.clone())
+                    .width(Length::Units(640))
+                    .height(Length::Units(360))
+            );
+
         let back = Button::new(&mut self.back_button, Text::new("Back"))
             .on_press(Message::ReturnToList);
         
         Column::new()
-            .align_items(Align::Start)
-            .push(back)
+            .height(Length::Fill)
+            .width(Length::Fill)
             .padding(10)
-            .align_items(Align::Center)
-            .push(Text::new(&self.name))
-            .push(Text::new(&self.max_vocal.to_string()))
-            .push(Text::new(&self.max_dance.to_string()))
-            .push(Text::new(&self.max_visual.to_string()))
-            .push(Text::new(&self.skill))
-            .push(Text::new(&self.center_skill))
-            .push(Image::new(self.bg.clone()))
+            .align_items(Align::Start)
+            .push(content)
+            .push(
+                Row::new()
+                    .push(back)
+                    .align_items(Align::Start)
+            )
             .into()
     }
 }
