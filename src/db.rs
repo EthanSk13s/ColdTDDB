@@ -196,25 +196,19 @@ impl TDDatabase {
         .bind(card_id)
         .fetch_one(&self.pool).await?;
 
+        let client = reqwest::Client::new();
         let bg = if card.rarity > 3 {
             let file_path = format!("cache/card_bg/{}.png", card.resource_id);
+            let url = format!(
+                "https://storage.matsurihi.me/mltd/card_bg/{}_1.png",
+                card.resource_id
+            );
 
-            if Path::new(&file_path).exists() == true {
-                image::Handle::from_path(&file_path)
-            } else {
-                let icon_url = format!(
-                    "https://storage.matsurihi.me/mltd/card_bg/{}_1.png",
-                    card.resource_id
-                );
-                let client = reqwest::Client::new();
-                let data = client.get(&icon_url).send().await?.bytes().await?;
-
-                tokio::fs::write(&file_path, data).await?;
-                image::Handle::from_path(&file_path)
-            }
+            Self::handle_image(&client, file_path, url).await?
         } else {
             image::Handle::from("")
         };
+
         let view = CardView::new(card, bg);
         Ok(view)
     }
@@ -240,19 +234,12 @@ impl TDDatabase {
         let client = reqwest::Client::new();
         for card in cards {
             let file_path = format!("cache/icons/{}.png", card.resource_id);
+            let url = format!(
+                "https://storage.matsurihi.me/mltd/icon_l/{}_1.png",
+                card.resource_id
+            );
 
-            let icon = if Path::new(&file_path).exists() == true {
-                image::Handle::from_path(&file_path)
-            } else {
-                let icon_url = format!(
-                    "https://storage.matsurihi.me/mltd/icon_l/{}_1.png",
-                    card.resource_id
-                );
-                let data = client.get(&icon_url).send().await?.bytes().await?;
-
-                tokio::fs::write(&file_path, data).await?;
-                image::Handle::from_path(&file_path)
-            };
+            let icon = Self::handle_image(&client, file_path, url).await?;
 
             buttons.push(CardButton::new(card.card_id, card.name, icon));
         }
@@ -307,6 +294,18 @@ impl TDDatabase {
             .await?;
 
         Ok(check.len() == 0)
+    }
+
+    async fn handle_image(client: &reqwest::Client,
+        file_path: String, url: String) -> Result<image::Handle, Error> {
+            if Path::new(&file_path).exists() == true {
+                Ok(image::Handle::from(&file_path))
+            } else {
+                let data = client.get(&url).send().await?.bytes().await?;
+
+                tokio::fs::write(&file_path, data).await?;
+                Ok(image::Handle::from_path(&file_path))
+            }
     }
 }
 
