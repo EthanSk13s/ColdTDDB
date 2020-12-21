@@ -21,6 +21,7 @@ fn main() -> iced::Result {
     if Path::new("cache").exists() == false {
         fs::create_dir("cache/icons");
         fs::create_dir("cache/card_bg");
+        fs::create_dir("cache/card_art");
     };
 
     let setting = Settings {

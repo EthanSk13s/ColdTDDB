@@ -18,12 +18,14 @@ pub struct CardView {
     min_visual: i32,
     max_visual: i32,
     bg: image::Handle,
+    card_art: image::Handle,
     back_button: button::State,
     scroll: scrollable::State
 }
 
 impl CardView {
-    pub fn new(card: db::DbCard, bg: image::Handle) -> CardView {
+    pub fn new(card: db::DbCard,
+        bg: image::Handle, card_art: image::Handle) -> CardView {
         CardView {
             name: card.name.clone(),
             rarity: card.rarity,
@@ -36,19 +38,14 @@ impl CardView {
             min_visual: card.visual_min,
             max_visual: card.visual_max,
             bg,
+            card_art,
             back_button: button::State::new(),
             scroll: scrollable::State::new()
         }
     }
 
     pub fn view(&mut self) -> Element<Message> {
-        let content = Scrollable::new(&mut self.scroll)
-            .height(Length::Fill)
-            .width(Length::Fill)
-            .push(
-                Text::new(&self.name)
-                    .size(42)
-            )
+        let values = Column::new()
             .push(
                 Text::new(
                     format!("Vocal: {}", &self.max_vocal.to_string())
@@ -74,11 +71,35 @@ impl CardView {
                     format!("Center Skill: {}", &self.center_skill)
                 )
             )
+            .padding(5)
+            .width(Length::FillPortion(2));
+
+        let info = Row::new()
+            .push(
+                Image::new(self.card_art.clone())
+                    .width(Length::FillPortion(1))
+                    .height(Length::FillPortion(1))
+            )
+            .push(values);
+
+        let card_bg = Row::new()
             .push(
                 Image::new(self.bg.clone())
                     .width(Length::Units(640))
                     .height(Length::Units(360))
-            );
+            )
+            .width(Length::Fill);
+
+        let content = Scrollable::new(&mut self.scroll)
+            .height(Length::Fill)
+            .width(Length::Fill)
+            .push(
+                Text::new(&self.name)
+                    .size(42)
+            )
+            .push(info)
+            .spacing(5)
+            .push(card_bg);
 
         let back = Button::new(&mut self.back_button, Text::new("Back"))
             .on_press(Message::ReturnToList);

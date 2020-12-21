@@ -64,7 +64,11 @@ impl Application for App {
                 db: tddb,
                 state: AppState::CardLoading,
                 card_list: CardListPage::new(0).unwrap(),
-                current_card: CardView::new(Default::default(), image::Handle::from("")),
+                current_card: CardView::new(
+                    Default::default(),
+                    image::Handle::from(""),
+                    image::Handle::from("")
+                ),
                 offset: 0,
                 previous_offsets: vec![1],
                 rarity_filter: vec![1,2,3,4],

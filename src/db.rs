@@ -209,7 +209,17 @@ impl TDDatabase {
             image::Handle::from("")
         };
 
-        let view = CardView::new(card, bg);
+        let card_art = {
+            let file_path = format!("cache/card_art/{}.png", card.resource_id);
+            let url = format!(
+                "https://storage.matsurihi.me/mltd/card/{}_1_a.png",
+                card.resource_id
+            );
+
+            Self::handle_image(&client, file_path, url).await?
+        };
+
+        let view = CardView::new(card, bg, card_art);
         Ok(view)
     }
 
