@@ -151,10 +151,12 @@ impl Application for App {
             Message::ToggleRarity(toggle, rarity) => {
                 if toggle == false {
                     self.rarity_filter.retain(|&x| x != rarity);
-                    self.card_list.filter.set_state(rarity, toggle)
+                    self.card_list.filter.rarity_filter
+                        .set_state(rarity, toggle)
                 } else {
                     self.rarity_filter.push(rarity);
-                    self.card_list.filter.set_state(rarity, toggle)
+                    self.card_list.filter.rarity_filter
+                        .set_state(rarity, toggle)
                 };
 
                 self.offset = 0;

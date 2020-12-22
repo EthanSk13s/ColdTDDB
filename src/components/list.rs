@@ -1,9 +1,10 @@
 use iced::{
     button, Button, Column, Element,
     Align, Text, Row, scrollable, Scrollable,
-    Length, image, Image, Checkbox
+    Length, image, Image
 };
 
+use super::filters::{RarityFilter};
 use crate::db;
 use crate::app::Message;
 
@@ -48,64 +49,22 @@ impl CardButton {
 }
 #[derive(Debug, Clone)]
 pub struct ListFilters {
-    pub n_toggle: bool,
-    pub r_toggle: bool,
-    pub sr_toggle: bool,
-    pub ssr_toggle: bool
+    pub rarity_filter: RarityFilter
 }
 
 impl ListFilters {
     pub fn new() -> ListFilters { 
         ListFilters {
-            n_toggle: true,
-            r_toggle: true,
-            sr_toggle: true,
-            ssr_toggle: true,
+            rarity_filter: RarityFilter::new()
         }
     }
     pub fn view(&mut self) -> Element<Message> {
-        let rarity_row = Row::new().push(Text::new("Rarity: "));
-
-        let n_radio = Checkbox::new(
-            self.n_toggle,
-            "N",
-            move|toggle| {Message::ToggleRarity(toggle, 1)}
-        );
-
-        let r_radio = Checkbox::new(
-            self.r_toggle,
-            "R",
-            move|toggle| {Message::ToggleRarity(toggle, 2)}
-        );
-
-        let sr_radio = Checkbox::new(
-            self.sr_toggle,
-            "SR",
-            move|toggle| {Message::ToggleRarity(toggle, 3)}
-        );
-
-        let ssr_radio = Checkbox::new(
-            self.ssr_toggle,
-            "SSR",
-            move|toggle| {Message::ToggleRarity(toggle, 4)}
-        );
+        let rarity_row = Row::new();
 
         rarity_row
-            .push(n_radio)
-            .push(r_radio)
-            .push(sr_radio)
-            .push(ssr_radio)
+            .push(self.rarity_filter.view())
             .into()
 
-    }
-    pub fn set_state(&mut self, value: i32, state: bool) {
-        match value {
-            1 => self.n_toggle = state,
-            2 => self.r_toggle = state,
-            3 => self.sr_toggle = state,
-            4 => self.ssr_toggle = state,
-            _ => (),
-        };
     }
 }
 
