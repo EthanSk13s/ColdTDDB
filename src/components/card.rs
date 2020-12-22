@@ -77,9 +77,10 @@ impl CardView {
         let info = Row::new()
             .push(
                 Image::new(self.card_art.clone())
-                    .width(Length::FillPortion(1))
-                    .height(Length::FillPortion(1))
+                    .width(Length::Units(320))
+                    .height(Length::Units(400))
             )
+            .width(Length::FillPortion(1))
             .push(values);
 
         let card_bg = Row::new()
