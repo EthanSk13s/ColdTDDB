@@ -229,7 +229,7 @@ impl TDDatabase {
         let query = format!(
             r#"SELECT * FROM cards
             WHERE card_id > $1
-            AND rarity IN {}
+            AND {}
             ORDER BY card_id
             LIMIT 25
             "#, filter);

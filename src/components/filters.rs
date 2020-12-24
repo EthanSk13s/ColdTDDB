@@ -1,6 +1,7 @@
 use iced::{Checkbox, Row, Element, Text};
 use crate::app::Message;
 
+#[derive(Debug, Clone)]
 pub struct TypeFilter {
     pub princess_toggle: bool,
     pub fairy_toggle: bool,
@@ -16,6 +17,41 @@ impl TypeFilter {
             angel_toggle: true,
             extra_toggle: true
         }
+    }
+
+    pub fn view(&mut self) -> Element<Message> {
+        let type_row = Row::new().push(Text::new("Idol type: "));
+
+        let princess_toggle = Checkbox::new(
+            self.princess_toggle,
+            "Princess",
+            move|toggle| {Message::ToggleType(toggle, 1)}
+        );
+
+        let fairy_toggle = Checkbox::new(
+            self.fairy_toggle,
+            "Fairy",
+            move|toggle| {Message::ToggleType(toggle, 2)}
+        );
+
+        let angel_toggle = Checkbox::new(
+            self.angel_toggle,
+            "Angel",
+            move|toggle| {Message::ToggleType(toggle, 3)}
+        );
+
+        let extra_toggle = Checkbox::new(
+            self.extra_toggle,
+            "Extra",
+            move|toggle| {Message::ToggleType(toggle, 5)}
+        );
+
+        type_row
+            .push(princess_toggle)
+            .push(fairy_toggle)
+            .push(angel_toggle)
+            .push(extra_toggle)
+            .into()
     }
 
     pub fn set_state(&mut self, value: i32, state: bool) {

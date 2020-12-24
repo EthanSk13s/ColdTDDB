@@ -4,7 +4,7 @@ use iced::{
     Length, image, Image
 };
 
-use super::filters::{RarityFilter};
+use super::filters::{RarityFilter, TypeFilter};
 use crate::db;
 use crate::app::Message;
 
@@ -49,19 +49,22 @@ impl CardButton {
 }
 #[derive(Debug, Clone)]
 pub struct ListFilters {
-    pub rarity_filter: RarityFilter
+    pub rarity_filter: RarityFilter,
+    pub type_filter: TypeFilter
 }
 
 impl ListFilters {
     pub fn new() -> ListFilters { 
         ListFilters {
-            rarity_filter: RarityFilter::new()
+            rarity_filter: RarityFilter::new(),
+            type_filter: TypeFilter::new()
         }
     }
     pub fn view(&mut self) -> Element<Message> {
         let rarity_row = Row::new();
 
         rarity_row
+            .push(self.type_filter.view())
             .push(self.rarity_filter.view())
             .into()
 

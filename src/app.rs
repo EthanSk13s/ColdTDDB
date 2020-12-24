@@ -13,6 +13,7 @@ pub struct App {
     offset: i32,
     previous_offsets: Vec<i32>,
     rarity_filter: Vec<i32>,
+    type_filter: Vec<i32>,
     filter: String,
     min: i32
 }
@@ -32,22 +33,59 @@ pub enum Message {
     CardPressed(i32),
     CardsListed(Result<CardListPage, db::Error>),
     ToggleRarity(bool, i32),
+    ToggleType(bool, i32),
     NextPage,
     PreviousPage,
     ReturnToList,
 }
 
 impl App {
-    fn construct_filter(rarity: Vec<i32>) -> String {
-        let mut filter = String::from("(");
-        for v in rarity {
-            let query = format!(",{}", &v.to_string().to_owned());
-            filter.push_str(&query)
+    fn construct_filter(&mut self) {
+        let mut rarity_filter = String::from("rarity IN (");
+
+        if self.rarity_filter.len() != 0 {
+            for v in self.rarity_filter.iter() {
+                let query = format!(",{}", &v.to_string().to_owned());
+                rarity_filter.push_str(&query)
+            }
+
+        rarity_filter.remove(11);
+        rarity_filter.push_str(")");
+        } else {
+            rarity_filter.push_str("1,2,3,4)");
+            
+            for x in vec![1,2,3,4] {
+                self.card_list.filter.rarity_filter
+                    .set_state(x, true);
+
+                self.rarity_filter.push(x)
+            }
+        };
+
+        let mut type_filter = String::from("idol_type IN (");
+
+        if self.type_filter.len() != 0 {
+            for v in self.type_filter.iter() {
+                let query = format!(",{}", &v.to_string().to_owned());
+                type_filter.push_str(&query)
+            }
+
+        type_filter.remove(14);
+        type_filter.push_str(")");
+        } else {
+            type_filter.push_str("1,2,3,5)");
+
+            for x in vec![1,2,3,5] {
+                self.card_list.filter.type_filter
+                    .set_state(x, true);
+
+                self.type_filter.push(x)
+            }
         }
 
-        filter.remove(1);
-        filter.push_str(")");
-        filter
+        let query = format!("{} AND {}", rarity_filter, type_filter);
+
+        self.filter = query;
     }
 }
 
@@ -72,7 +110,12 @@ impl Application for App {
                 offset: 0,
                 previous_offsets: vec![1],
                 rarity_filter: vec![1,2,3,4],
-                filter: String::from("(1,2,3,4)"),
+                type_filter: vec![1,2,3,5],
+                filter: String::from(
+                    r#"rarity in (1,2,3,4)
+                    AND idol_type in (1,2,3,5)
+                    "#
+                ),
                 min: 0
             },
             Command::perform(td_clone.init(), Message::DbLoaded)
@@ -161,7 +204,27 @@ impl Application for App {
 
                 self.offset = 0;
                 self.min = 0;
-                self.filter = Self::construct_filter(self.rarity_filter.clone());
+                self.construct_filter();
+                Command::perform(self.db.clone().get_card_list(
+                    self.card_list.clone(),
+                    self.offset,
+                    self.filter.to_owned()),
+                    Message::CardsListed)
+            }
+            Message::ToggleType(toggle, idol_type) => {
+                if toggle == false {
+                    self.type_filter.retain(|&x| x != idol_type);
+                    self.card_list.filter.type_filter
+                        .set_state(idol_type, toggle)
+                } else {
+                    self.type_filter.push(idol_type);
+                    self.card_list.filter.type_filter
+                        .set_state(idol_type, toggle)
+                };
+
+                self.offset = 0;
+                self.min = 0;
+                self.construct_filter();
                 Command::perform(self.db.clone().get_card_list(
                     self.card_list.clone(),
                     self.offset,
