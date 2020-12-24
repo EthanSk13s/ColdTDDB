@@ -23,7 +23,8 @@ enum AppState {
     Error { error: db::Error },
     CardLoading,
     CardFound { card: CardView },
-    CardList { cards: Result<CardListPage, db::Error> }
+    CardList { cards: Result<CardListPage, db::Error> },
+    CardListNotFound { cards: Result<CardListPage, db::Error> },
 }
 
 #[derive(Debug, Clone)]
@@ -158,13 +159,17 @@ impl Application for App {
                 Command::perform(self.db.clone().get_card(id), Message::CardLoaded)
             }
             Message::CardsListed(cards) => {
-                let min = self.previous_offsets.get(0);
-                self.min = match min {
-                    Some(id) => *id,
-                    None => cards.clone().unwrap().cards[0].id
-                };
+                if cards.clone().unwrap().cards.len() != 0 {
+                    let min = self.previous_offsets.get(0);
+                    self.min = match min {
+                        Some(id) => *id,
+                        None => cards.clone().unwrap().cards[0].id
+                    };
 
-                self.state = AppState::CardList{cards};
+                    self.state = AppState::CardList{cards}
+                } else {
+                    self.state = AppState::CardListNotFound{cards}
+                };
 
                 Command::none()
             }
@@ -257,7 +262,12 @@ impl Application for App {
                 self.card_list = cards.as_ref().unwrap().clone();
                 self.card_list.set_min(self.min); 
                 Column::new()
-                .push(self.card_list.view())
+                    .push(self.card_list.view())
+            }
+            AppState::CardListNotFound { cards } => {
+                self.card_list = cards.as_ref().unwrap().clone();
+                Column::new()
+                    .push(self.card_list.empty_view())
             }
         };
 

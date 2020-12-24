@@ -144,4 +144,19 @@ impl CardListPage {
             .align_items(Align::Center)
             .into()
     }
+
+    pub fn empty_view(&mut self) -> Element<Message> {
+        let column = Column::new();
+        
+        column
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .push(self.filter.view())
+            .push(
+                Text::new("No cards found.")
+                    .size(54)
+            )
+            .align_items(Align::Center)
+            .into()
+    }
 }
