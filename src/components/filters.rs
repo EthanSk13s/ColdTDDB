@@ -20,33 +20,38 @@ impl TypeFilter {
     }
 
     pub fn view(&mut self) -> Element<Message> {
-        let type_row = Row::new().push(Text::new("Idol type: "));
+        let type_row = Row::new().push(Text::new("Idol type:"));
 
         let princess_toggle = Checkbox::new(
             self.princess_toggle,
             "Princess",
             move|toggle| {Message::ToggleType(toggle, 1)}
-        );
+        )
+        .spacing(5);
 
         let fairy_toggle = Checkbox::new(
             self.fairy_toggle,
             "Fairy",
             move|toggle| {Message::ToggleType(toggle, 2)}
-        );
+        )
+        .spacing(5);
 
         let angel_toggle = Checkbox::new(
             self.angel_toggle,
             "Angel",
             move|toggle| {Message::ToggleType(toggle, 3)}
-        );
+        )
+        .spacing(5);
 
         let extra_toggle = Checkbox::new(
             self.extra_toggle,
             "Extra",
             move|toggle| {Message::ToggleType(toggle, 5)}
-        );
+        )
+        .spacing(5);
 
         type_row
+            .spacing(10)
             .push(princess_toggle)
             .push(fairy_toggle)
             .push(angel_toggle)
@@ -84,33 +89,38 @@ impl RarityFilter {
     }
 
     pub fn view(&mut self) -> Element<Message> {
-        let rarity_row = Row::new().push(Text::new("Rarity: "));
+        let rarity_row = Row::new().push(Text::new("Rarity:"));
 
         let n_radio = Checkbox::new(
             self.n_toggle,
             "N",
             move|toggle| {Message::ToggleRarity(toggle, 1)}
-        );
+        )
+        .spacing(5);
 
         let r_radio = Checkbox::new(
             self.r_toggle,
             "R",
             move|toggle| {Message::ToggleRarity(toggle, 2)}
-        );
+        )
+        .spacing(5);
 
         let sr_radio = Checkbox::new(
             self.sr_toggle,
             "SR",
             move|toggle| {Message::ToggleRarity(toggle, 3)}
-        );
+        )
+        .spacing(5);
 
         let ssr_radio = Checkbox::new(
             self.ssr_toggle,
             "SSR",
             move|toggle| {Message::ToggleRarity(toggle, 4)}
-        );
+        )
+        .spacing(5);
 
         rarity_row
+            .spacing(10)
             .push(n_radio)
             .push(r_radio)
             .push(sr_radio)

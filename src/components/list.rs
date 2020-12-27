@@ -65,6 +65,7 @@ impl ListFilters {
 
         rarity_row
             .push(self.type_filter.view())
+            .spacing(10)
             .push(self.rarity_filter.view())
             .into()
 
