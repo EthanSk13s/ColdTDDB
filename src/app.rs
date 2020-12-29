@@ -2,7 +2,7 @@ use iced::{
     Container, Command, Application, Element, Column, Length, Text, image
 };
 
-use crate::components::{CardView, CardListPage};
+use crate::components::{CardView, CardListPage, IdolList};
 use crate::db;
 
 pub struct App {
@@ -14,6 +14,7 @@ pub struct App {
     previous_offsets: Vec<i32>,
     rarity_filter: Vec<i32>,
     type_filter: Vec<i32>,
+    idol_filter: i32,
     filter: String,
     min: i32
 }
@@ -35,6 +36,7 @@ pub enum Message {
     CardsListed(Result<CardListPage, db::Error>),
     ToggleRarity(bool, i32),
     ToggleType(bool, i32),
+    PickIdol(IdolList),
     NextPage,
     PreviousPage,
     ReturnToList,
@@ -83,8 +85,12 @@ impl App {
                 self.type_filter.push(x)
             }
         }
+        let mut idol_filter = String::from("");
+        if self.idol_filter != 0 {
+            idol_filter = format!("AND idol_id == {}", self.idol_filter);
+        }
 
-        let query = format!("{} AND {}", rarity_filter, type_filter);
+        let query = format!("{} AND {} {}", rarity_filter, type_filter, idol_filter);
 
         self.filter = query;
     }
@@ -112,6 +118,7 @@ impl Application for App {
                 previous_offsets: vec![1],
                 rarity_filter: vec![1,2,3,4],
                 type_filter: vec![1,2,3,5],
+                idol_filter: 0,
                 filter: String::from(
                     r#"rarity in (1,2,3,4)
                     AND idol_type in (1,2,3,5)
@@ -237,6 +244,16 @@ impl Application for App {
                     Message::CardsListed)
             }
             Message::ReturnToList => {
+                Command::perform(self.db.clone().get_card_list(
+                    self.card_list.clone(),
+                    self.offset,
+                    self.filter.to_owned()),
+                    Message::CardsListed)
+            }
+            Message::PickIdol(idol) => {
+                self.idol_filter = idol as i32;
+                self.card_list.filter.idol_filter.selected = idol;
+                self.construct_filter();
                 Command::perform(self.db.clone().get_card_list(
                     self.card_list.clone(),
                     self.offset,

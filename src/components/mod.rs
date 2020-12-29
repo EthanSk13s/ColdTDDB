@@ -4,3 +4,4 @@ mod filters;
 
 pub use card::*;
 pub use list::*;
+pub use filters::IdolList;
