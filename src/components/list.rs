@@ -7,6 +7,7 @@ use iced::{
 use super::filters::{RarityFilter, TypeFilter, IdolFilter};
 use crate::db;
 use crate::app::Message;
+use crate::styles;
 
 #[derive(Debug, Clone)]
 pub struct CardButton {
@@ -39,7 +40,8 @@ impl CardButton {
             )
             .align_items(Align::Center);
         let link_button = Button::new(&mut self.link, content)
-            .on_press(Message::CardPressed(self.id));
+            .on_press(Message::CardPressed(self.id))
+            .style(styles::CardButtonStyle);
 
         Row::new()
             .align_items(Align::Start)

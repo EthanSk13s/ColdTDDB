@@ -5,6 +5,7 @@ mod db;
 mod princess;
 mod components;
 mod app;
+mod styles;
 
 use std::path::Path;
 use std::fs;
