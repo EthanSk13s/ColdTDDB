@@ -358,7 +358,7 @@ impl std::fmt::Display for IdolList {
             IdolList::Momoko => write!(f, "Suou Momoko"),
             IdolList::Julia => write!(f, "Julia"),
             IdolList::Tsumugi => write!(f, "Shiraishi Tsumugi"),
-            IdolList::Kaori => write!(f, "Sakuramori Kaorio"),
+            IdolList::Kaori => write!(f, "Sakuramori Kaori"),
             IdolList::Shika => write!(f, "Shika"),
             IdolList::Leon => write!(f, "Leon"),
             IdolList::Frederica => write!(f, "Miyamoto Frederica"),
