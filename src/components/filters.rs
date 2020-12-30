@@ -144,6 +144,8 @@ impl RarityFilter {
     }
 }
 
+
+// This has too many options, maybe need something different than a picklist
 #[derive(Debug, Clone)]
 pub struct IdolFilter {
     idol_list: pick_list::State<IdolList>,
@@ -172,8 +174,6 @@ impl IdolFilter {
     }
 }
 
-
-// TODO: Rewrite this to name TL for sake of DRY
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum IdolList {
     All = 0,
