@@ -46,15 +46,13 @@ impl App {
     fn construct_filter(&mut self) {
         let mut rarity_filter = String::from("rarity IN (");
 
-        if self.rarity_filter.len() != 0 {
-            for v in self.rarity_filter.iter() {
-                let query = format!(",{}", &v.to_string().to_owned());
-                rarity_filter.push_str(&query)
-            }
+        rarity_filter = App::check_len(
+            &self.rarity_filter,
+            &mut rarity_filter,
+            11
+        );
 
-        rarity_filter.remove(11);
-        rarity_filter.push_str(")");
-        } else {
+        if self.rarity_filter.len() == 0 {
             rarity_filter.push_str("1,2,3,4)");
             
             for x in vec![1,2,3,4] {
@@ -63,19 +61,17 @@ impl App {
 
                 self.rarity_filter.push(x)
             }
-        };
+        }
 
         let mut type_filter = String::from("idol_type IN (");
 
-        if self.type_filter.len() != 0 {
-            for v in self.type_filter.iter() {
-                let query = format!(",{}", &v.to_string().to_owned());
-                type_filter.push_str(&query)
-            }
+        type_filter = App::check_len(
+            &self.type_filter, 
+            &mut type_filter, 
+            14
+        );
 
-        type_filter.remove(14);
-        type_filter.push_str(")");
-        } else {
+        if self.type_filter.len() == 0 {
             type_filter.push_str("1,2,3,5)");
 
             for x in vec![1,2,3,5] {
@@ -85,6 +81,7 @@ impl App {
                 self.type_filter.push(x)
             }
         }
+
         let mut idol_filter = String::from("");
         if self.idol_filter != 0 {
             idol_filter = format!("AND idol_id == {}", self.idol_filter);
@@ -93,6 +90,20 @@ impl App {
         let query = format!("{} AND {} {}", rarity_filter, type_filter, idol_filter);
 
         self.filter = query;
+    }
+
+    fn check_len(x: &Vec<i32>, y: &mut String, i: usize) -> String {
+        if x.len() != 0 {
+            for v in x.iter() {
+                let query = format!(",{}", &v.to_string().to_owned());
+                y.push_str(&query)
+            }
+
+            y.remove(i);
+            y.push_str(")");
+        };
+
+        y.to_string()
     }
 }
 
@@ -253,6 +264,9 @@ impl Application for App {
             Message::PickIdol(idol) => {
                 self.idol_filter = idol as i32;
                 self.card_list.filter.idol_filter.selected = idol;
+
+                self.offset = 0;
+                self.min = 0;
                 self.construct_filter();
                 Command::perform(self.db.clone().get_card_list(
                     self.card_list.clone(),
