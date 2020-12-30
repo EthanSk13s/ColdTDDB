@@ -251,7 +251,11 @@ impl TDDatabase {
 
             let icon = Self::handle_image(&client, file_path, url).await?;
 
-            buttons.push(CardButton::new(card.card_id, card.name, icon));
+            buttons.push(CardButton::new(
+                card.card_id, 
+                card.name, icon, 
+                card.idol_type
+            ));
         }
 
         let mut card_list = current;

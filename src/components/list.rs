@@ -14,16 +14,18 @@ pub struct CardButton {
     name: String,
     pub id: i32,
     link: button::State,
-    icon: image::Handle
+    icon: image::Handle,
+    idol_type: i8
 }
 
 impl CardButton {
-    pub fn new(id: i32, name: String, icon: image::Handle) -> CardButton {
+    pub fn new(id: i32, name: String, icon: image::Handle, idol_type: i8) -> CardButton {
         CardButton {
             name,
             id,
             link: button::State::new(),
-            icon
+            icon,
+            idol_type
         }
     }
 
@@ -41,7 +43,9 @@ impl CardButton {
             .align_items(Align::Center);
         let link_button = Button::new(&mut self.link, content)
             .on_press(Message::CardPressed(self.id))
-            .style(styles::CardButtonStyle);
+            .style(styles::CardButtonStyle {
+                idol_type: self.idol_type
+            });
 
         Row::new()
             .align_items(Align::Start)
