@@ -225,7 +225,7 @@ fn match_effect(id: i16, eval1: String,
      eval2: String, value: Vec<i32>) -> String {
     match id {
         1 => format!("of increasing {} score by {}%", eval1, value[0]),
-        2 => format!("of increasing the combo bonuse by {}", value[0]),
+        2 => format!("of increasing the combo bonus by {}", value[0]),
         3 => format!("of recovering {} lives while hitting {}", value[0], eval1),
         4 => String::from("of not losing life"),
         5 => format!("of maintaining the combo, while hitting {}", eval1),
@@ -233,7 +233,7 @@ fn match_effect(id: i16, eval1: String,
         7 => format!("of increasing the {} score by {} and the combo bonus by {}%", eval1, value[0], value[1]),
         8 => format!("of increasing {} score by {}% and recovering {} life with every {}", eval1, value[0], value[1], eval2),
         10 => format!("of consuming {} lives, and increasing {} score by {}%", value[1], eval1, value[0]),
-        11 => format!("of consuming {} lives, and increasing combo bonuse by {}%", value[1], value[0]),
+        11 => format!("of consuming {} lives, and increasing combo bonus by {}%", value[1], value[0]),
         _ => String::from("No TL found.")
     }
 }
