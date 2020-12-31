@@ -205,6 +205,22 @@ fn match_evaluations(id: i16) -> &'static str {
     }
 }
 
+fn match_skill_type(id: i16) -> String {
+    match id {
+        1 => String::from("Score Up"),
+        2 => String::from("Combo Bonus"),
+        3 => String::from("Life Recovery"),
+        4 => String::from("Damage Guard"),
+        5 => String::from("Maintain Combo"),
+        6 => String::from("Judgment Strengthening"),
+        7 => String::from("Double Boost"),
+        8 => String::from("Multi-Up"),
+        10 => String::from("Overclock"),
+        11 => String::from("Overrun"), // Got to double check this, my katakana reading sucks
+        _ => String::from("Unknown Skill")
+    }
+}
+
 fn match_effect(id: i16, eval1: String,
      eval2: String, value: Vec<i32>) -> String {
     match id {
