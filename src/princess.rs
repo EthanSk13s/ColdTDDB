@@ -205,7 +205,7 @@ fn match_evaluations(id: i16) -> &'static str {
     }
 }
 
-fn match_skill_type(id: i16) -> String {
+pub fn match_skill_type(id: i16) -> String {
     match id {
         1 => String::from("Score Up"),
         2 => String::from("Combo Bonus"),

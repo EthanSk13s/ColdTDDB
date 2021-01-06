@@ -2,13 +2,14 @@ use iced::{Column, Element, Align, Text,
     image, Image, button, Button, 
     Row, Length, scrollable, Scrollable};
 
-use crate::db;
+use crate::{db, princess};
 use crate::app::Message;
 
 #[derive(Debug, Clone)]
 pub struct CardView {
     name: String,
     rarity: i32,
+    skill_id: i16,
     skill: String,
     center_skill: String,
     min_vocal: i32,
@@ -29,6 +30,7 @@ impl CardView {
         CardView {
             name: card.name.clone(),
             rarity: card.rarity,
+            skill_id: card.skill_id,
             skill: card.skill.clone(),
             center_skill: card.center_skill.clone(),
             min_vocal: card.vocal_min,
@@ -59,6 +61,11 @@ impl CardView {
             .push(
                 Text::new(
                     format!("Visual: {}", &self.max_visual.to_string())
+                )
+            )
+            .push(
+                Text::new(
+                    format!("Skill Type: {}", princess::match_skill_type(self.skill_id))
                 )
             )
             .push(

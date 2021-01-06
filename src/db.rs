@@ -16,6 +16,7 @@ pub struct DbCard {
     pub rarity: i32,
     idol_type: i8,
     pub extra_type: i8,
+    pub skill_id: i16,
     pub skill: String,
     pub center_skill: String,
     pub vocal_min: i32,
@@ -148,6 +149,7 @@ impl TDDatabase {
                 name TEXT,
                 idol_type INTEGER,
                 extra_type INTEGER,
+                skill_id INTEGER,
                 skill TEXT,
                 center_skill TEXT,
                 vocal_min INTEGER,
@@ -272,7 +274,7 @@ impl TDDatabase {
         VALUES (
             null, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
             $11, $12, $13, $14, $15, $16, $17, $18, $19, $20,
-            $21
+            $21, $22
         )"#)
             .bind(card.id)
             .bind(card.rarity)
@@ -280,6 +282,7 @@ impl TDDatabase {
             .bind(princess::set_name(card.name))
             .bind(card.idol_type)
             .bind(card.extra_type)
+            .bind(card.skill[0].effect_id)
             .bind(princess::tl_skill(&card.skill[0]))
             .bind(princess::tl_center_skill(&card.center_effect))
             .bind(card.vocal_min)
