@@ -4,7 +4,7 @@ use iced::{
     Length, image, Image
 };
 
-use super::filters::{RarityFilter, TypeFilter, IdolFilter};
+use super::filters::{RarityFilter, TypeFilter, IdolFilter, SkillFilter};
 use crate::db;
 use crate::app::Message;
 use crate::styles;
@@ -57,7 +57,8 @@ impl CardButton {
 pub struct ListFilters {
     pub rarity_filter: RarityFilter,
     pub type_filter: TypeFilter,
-    pub idol_filter: IdolFilter
+    pub idol_filter: IdolFilter,
+    pub skill_filter: SkillFilter
 }
 
 impl ListFilters {
@@ -65,17 +66,27 @@ impl ListFilters {
         ListFilters {
             rarity_filter: RarityFilter::new(),
             type_filter: TypeFilter::new(),
-            idol_filter: IdolFilter::new()
+            idol_filter: IdolFilter::new(),
+            skill_filter: SkillFilter::new()
         }
     }
     pub fn view(&mut self) -> Element<Message> {
-        let rarity_row = Row::new();
+        let filter_column = Column::new();
+        let first_row = Row::new();
+        let second_row = Row::new();
 
-        rarity_row
-            .spacing(10)
-            .push(self.idol_filter.view())
-            .push(self.type_filter.view())
-            .push(self.rarity_filter.view())
+        filter_column
+            .push(
+                first_row
+                    .spacing(10)
+                    .push(self.idol_filter.view())
+                    .push(self.type_filter.view())
+                    .push(self.rarity_filter.view())
+            )
+            .push(
+                second_row.spacing(10)
+                    .push(self.skill_filter.view())
+            )
             .into()
 
     }

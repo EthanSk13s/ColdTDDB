@@ -14,6 +14,7 @@ pub struct App {
     previous_offsets: Vec<i32>,
     rarity_filter: Vec<i32>,
     type_filter: Vec<i32>,
+    skill_filter: Vec<i16>,
     idol_filter: i32,
     filter: String,
     min: i32
@@ -36,6 +37,7 @@ pub enum Message {
     CardsListed(Result<CardListPage, db::Error>),
     ToggleRarity(bool, i32),
     ToggleType(bool, i32),
+    ToggleSkill(bool, i16),
     PickIdol(IdolList),
     NextPage,
     PreviousPage,
@@ -129,6 +131,7 @@ impl Application for App {
                 previous_offsets: vec![1],
                 rarity_filter: vec![1,2,3,4],
                 type_filter: vec![1,2,3,5],
+                skill_filter: vec![1,2,3,4,5,6,7,8,10,11],
                 idol_filter: 0,
                 filter: String::from(
                     r#"rarity in (1,2,3,4)
@@ -244,6 +247,26 @@ impl Application for App {
                     self.card_list.filter.type_filter
                         .set_state(idol_type, toggle)
                 };
+
+                self.offset = 0;
+                self.min = 0;
+                self.construct_filter();
+                Command::perform(self.db.clone().get_card_list(
+                    self.card_list.clone(),
+                    self.offset,
+                    self.filter.to_owned()),
+                    Message::CardsListed)
+            }
+            Message::ToggleSkill(toggle, skill_type) => {
+                if toggle == false {
+                    self.skill_filter.retain(|&x| x != skill_type);
+                    self.card_list.filter.skill_filter
+                        .set_state(skill_type, toggle)
+                } else {
+                    self.skill_filter.push(skill_type);
+                    self.card_list.filter.skill_filter
+                        .set_state(skill_type, toggle)
+                }
 
                 self.offset = 0;
                 self.min = 0;

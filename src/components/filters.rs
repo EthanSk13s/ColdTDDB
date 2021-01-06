@@ -144,7 +144,140 @@ impl RarityFilter {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct SkillFilter {
+    pub score_toggle: bool,
+    pub bonus_toggle: bool,
+    pub recover_toggle: bool,
+    pub guard_toggle: bool,
+    pub combo_toggle: bool,
+    pub judgment_toggle: bool,
+    pub boost_toggle: bool,
+    pub up_toggle: bool,
+    pub oc_toggle: bool,
+    pub or_toggle: bool
+}
 
+impl SkillFilter {
+    pub fn new() -> Self {
+        SkillFilter {
+            score_toggle: true,
+            bonus_toggle: true,
+            recover_toggle: true,
+            guard_toggle: true,
+            combo_toggle: true,
+            judgment_toggle: true,
+            boost_toggle: true,
+            up_toggle: true,
+            oc_toggle: true,
+            or_toggle: true
+        }
+    }
+
+    pub fn view(&mut self) -> Element<Message> {
+        let skill_row = Row::new().push(Text::new("Skills:"));
+
+        let score_check = Checkbox::new(
+            self.score_toggle,
+            "Score Up",
+            move|toggle| {Message::ToggleSkill(toggle, 1)}
+        )
+        .spacing(5);
+
+        let bonus_check = Checkbox::new(
+            self.bonus_toggle,
+            "Combo Bonus",
+            move|toggle| {Message::ToggleSkill(toggle, 2)}
+        )
+        .spacing(5);
+
+        let recover_check = Checkbox::new(
+            self.recover_toggle,
+            "Life Recovery",
+            move|toggle| {Message::ToggleSkill(toggle, 3)}
+        )
+        .spacing(5);
+
+        let guard_check = Checkbox::new(
+            self.guard_toggle,
+            "Damage Guard",
+            move|toggle| {Message::ToggleSkill(toggle, 4)}
+        )
+        .spacing(5);
+
+        let combo_check = Checkbox::new(
+            self.combo_toggle,
+            "Maintain Combo",
+            move|toggle| {Message::ToggleSkill(toggle, 5)}
+        )
+        .spacing(5);
+
+        let judgment_check = Checkbox::new(
+            self.judgment_toggle,
+            "Judgment Strengthening",
+            move|toggle| {Message::ToggleSkill(toggle, 6)}
+        )
+        .spacing(5);
+
+        let boost_check = Checkbox::new(
+            self.boost_toggle,
+            "Double Boost",
+            move|toggle| {Message::ToggleSkill(toggle, 7)}
+        )
+        .spacing(5);
+
+        let up_check = Checkbox::new(
+            self.up_toggle,
+            "Multi-Up",
+            move|toggle| {Message::ToggleSkill(toggle, 8)}
+        )
+        .spacing(5);
+
+        let oc_check = Checkbox::new(
+            self.oc_toggle,
+            "Overclock",
+            move|toggle| {Message::ToggleSkill(toggle, 10)}
+        )
+        .spacing(5);
+
+        let or_check = Checkbox::new(
+            self.or_toggle,
+            "Overrun",
+            move|toggle| {Message::ToggleSkill(toggle, 11)}
+        )
+        .spacing(5);
+
+        skill_row
+            .spacing(10)
+            .push(score_check)
+            .push(bonus_check)
+            .push(recover_check)
+            .push(guard_check)
+            .push(combo_check)
+            .push(judgment_check)
+            .push(boost_check)
+            .push(up_check)
+            .push(oc_check)
+            .push(or_check)
+            .into()
+    }
+
+    pub fn set_state(&mut self, value: i16, state: bool) {
+        match value {
+            1 => self.score_toggle = state,
+            2 => self.bonus_toggle = state,
+            3 => self.recover_toggle = state,
+            4 => self.guard_toggle = state,
+            5 => self.combo_toggle = state,
+            6 => self.judgment_toggle = state,
+            7 => self.boost_toggle = state,
+            8 => self.up_toggle = state,
+            10 => self.oc_toggle = state,
+            11 => self.or_toggle = state,
+            _ => ()
+        };
+    }
+}
 // This has too many options, maybe need something different than a picklist
 #[derive(Debug, Clone)]
 pub struct IdolFilter {
