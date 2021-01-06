@@ -199,7 +199,7 @@ fn match_evaluations(id: i16) -> &'static str {
         3 => "Great",
         4 => "Great/Fast/Good/Slow",
         5 => "Perfect/Great/Good",
-        6 => "Perfect/Gread/Good/Fast/Slow",
+        6 => "Perfect/Great/Good/Fast/Slow",
         7 => "Great/Good",
         _ => "Unknown"
     }
