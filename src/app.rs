@@ -14,7 +14,7 @@ pub struct App {
     previous_offsets: Vec<i32>,
     rarity_filter: Vec<i32>,
     type_filter: Vec<i32>,
-    skill_filter: Vec<i16>,
+    skill_filter: Vec<i32>,
     idol_filter: i32,
     filter: String,
     min: i32
@@ -84,12 +84,35 @@ impl App {
             }
         }
 
+        let mut skill_filter = String::from("skill_id IN (");
+
+        skill_filter = App::check_len(
+            &self.skill_filter,
+            &mut skill_filter,
+            13
+        );
+
+        if self.skill_filter.len() == 0 {
+            skill_filter.push_str("1,2,3,4,5,6,7,8,10,11");
+
+            for x in vec![1,2,3,4,5,6,7,18,10,11] {
+                self.card_list.filter.skill_filter
+                    .set_state(x, true);
+
+                self.skill_filter.push(x.into())
+            }
+        }
+
         let mut idol_filter = String::from("");
         if self.idol_filter != 0 {
             idol_filter = format!("AND idol_id == {}", self.idol_filter);
         }
 
-        let query = format!("{} AND {} {}", rarity_filter, type_filter, idol_filter);
+        let query = format!(
+            "{} AND {} AND {} {}",
+            rarity_filter, type_filter, 
+            skill_filter, idol_filter
+        );
 
         self.filter = query;
     }
@@ -259,11 +282,11 @@ impl Application for App {
             }
             Message::ToggleSkill(toggle, skill_type) => {
                 if toggle == false {
-                    self.skill_filter.retain(|&x| x != skill_type);
+                    self.skill_filter.retain(|&x| x != skill_type as i32);
                     self.card_list.filter.skill_filter
                         .set_state(skill_type, toggle)
                 } else {
-                    self.skill_filter.push(skill_type);
+                    self.skill_filter.push(skill_type.into());
                     self.card_list.filter.skill_filter
                         .set_state(skill_type, toggle)
                 }
