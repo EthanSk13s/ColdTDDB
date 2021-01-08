@@ -4,13 +4,15 @@ use iced::{
 };
 
 use crate::app::Message;
+use super::FilterMessage;
 
 #[derive(Debug, Clone)]
 pub struct TypeFilter {
     pub princess_toggle: bool,
     pub fairy_toggle: bool,
     pub angel_toggle: bool,
-    pub extra_toggle: bool
+    pub extra_toggle: bool,
+    pub current_filters: Vec<i32>
 }
 
 impl TypeFilter {
@@ -19,7 +21,8 @@ impl TypeFilter {
             princess_toggle: true,
             fairy_toggle: true,
             angel_toggle: true,
-            extra_toggle: true
+            extra_toggle: true,
+            current_filters: vec![1,2,3,5]
         }
     }
 
@@ -29,28 +32,36 @@ impl TypeFilter {
         let princess_toggle = Checkbox::new(
             self.princess_toggle,
             "Princess",
-            move|toggle| {Message::ToggleType(toggle, 1)}
+            move|toggle| {Message::FilterUpdate(
+                FilterMessage::ToggleType(toggle, 1)
+            )}
         )
         .spacing(5);
 
         let fairy_toggle = Checkbox::new(
             self.fairy_toggle,
             "Fairy",
-            move|toggle| {Message::ToggleType(toggle, 2)}
+            move|toggle| {Message::FilterUpdate(
+                FilterMessage::ToggleType(toggle, 2)
+            )}
         )
         .spacing(5);
 
         let angel_toggle = Checkbox::new(
             self.angel_toggle,
             "Angel",
-            move|toggle| {Message::ToggleType(toggle, 3)}
+            move|toggle| {Message::FilterUpdate(
+                FilterMessage::ToggleType(toggle, 3)
+            )}
         )
         .spacing(5);
 
         let extra_toggle = Checkbox::new(
             self.extra_toggle,
             "Extra",
-            move|toggle| {Message::ToggleType(toggle, 5)}
+            move|toggle| {Message::FilterUpdate(
+                FilterMessage::ToggleType(toggle, 5)
+            )}
         )
         .spacing(5);
 
@@ -79,7 +90,8 @@ pub struct RarityFilter {
     pub n_toggle: bool,
     pub r_toggle: bool,
     pub sr_toggle: bool,
-    pub ssr_toggle: bool
+    pub ssr_toggle: bool,
+    pub current_filters: Vec<i32>
 }
 
 impl RarityFilter {
@@ -88,7 +100,8 @@ impl RarityFilter {
             n_toggle: true,
             r_toggle: true,
             sr_toggle: true,
-            ssr_toggle: true
+            ssr_toggle: true,
+            current_filters: vec![1,2,3,4]
         }
     }
 
@@ -98,28 +111,36 @@ impl RarityFilter {
         let n_radio = Checkbox::new(
             self.n_toggle,
             "N",
-            move|toggle| {Message::ToggleRarity(toggle, 1)}
+            move|toggle| {Message::FilterUpdate(
+                FilterMessage::ToggleRarity(toggle, 1)
+            )}
         )
         .spacing(5);
 
         let r_radio = Checkbox::new(
             self.r_toggle,
             "R",
-            move|toggle| {Message::ToggleRarity(toggle, 2)}
+            move|toggle| {Message::FilterUpdate(
+                FilterMessage::ToggleRarity(toggle, 2)
+            )}
         )
         .spacing(5);
 
         let sr_radio = Checkbox::new(
             self.sr_toggle,
             "SR",
-            move|toggle| {Message::ToggleRarity(toggle, 3)}
+            move|toggle| {Message::FilterUpdate(
+                FilterMessage::ToggleRarity(toggle, 3)
+            )}
         )
         .spacing(5);
 
         let ssr_radio = Checkbox::new(
             self.ssr_toggle,
             "SSR",
-            move|toggle| {Message::ToggleRarity(toggle, 4)}
+            move|toggle| {Message::FilterUpdate(
+                FilterMessage::ToggleRarity(toggle, 4)
+            )}
         )
         .spacing(5);
 
@@ -155,7 +176,8 @@ pub struct SkillFilter {
     pub boost_toggle: bool,
     pub up_toggle: bool,
     pub oc_toggle: bool,
-    pub or_toggle: bool
+    pub or_toggle: bool,
+    pub current_filters: Vec<i32>
 }
 
 impl SkillFilter {
@@ -170,7 +192,8 @@ impl SkillFilter {
             boost_toggle: true,
             up_toggle: true,
             oc_toggle: true,
-            or_toggle: true
+            or_toggle: true,
+            current_filters: vec![1,2,3,4,5,6,7,8,10,11]
         }
     }
 
@@ -180,70 +203,90 @@ impl SkillFilter {
         let score_check = Checkbox::new(
             self.score_toggle,
             "Score Up",
-            move|toggle| {Message::ToggleSkill(toggle, 1)}
+            move|toggle| {Message::FilterUpdate(
+                FilterMessage::ToggleSkill(toggle, 1)
+            )}
         )
         .spacing(5);
 
         let bonus_check = Checkbox::new(
             self.bonus_toggle,
             "Combo Bonus",
-            move|toggle| {Message::ToggleSkill(toggle, 2)}
+            move|toggle| {Message::FilterUpdate(
+                FilterMessage::ToggleSkill(toggle, 2)
+            )}
         )
         .spacing(5);
 
         let recover_check = Checkbox::new(
             self.recover_toggle,
             "Life Recovery",
-            move|toggle| {Message::ToggleSkill(toggle, 3)}
+            move|toggle| {Message::FilterUpdate(
+                FilterMessage::ToggleSkill(toggle, 3)
+            )}
         )
         .spacing(5);
 
         let guard_check = Checkbox::new(
             self.guard_toggle,
             "Damage Guard",
-            move|toggle| {Message::ToggleSkill(toggle, 4)}
+            move|toggle| {Message::FilterUpdate(
+                FilterMessage::ToggleSkill(toggle, 4)
+            )}
         )
         .spacing(5);
 
         let combo_check = Checkbox::new(
             self.combo_toggle,
             "Maintain Combo",
-            move|toggle| {Message::ToggleSkill(toggle, 5)}
+            move|toggle| {Message::FilterUpdate(
+                FilterMessage::ToggleSkill(toggle, 5)
+            )}
         )
         .spacing(5);
 
         let judgment_check = Checkbox::new(
             self.judgment_toggle,
             "Judgment Strengthening",
-            move|toggle| {Message::ToggleSkill(toggle, 6)}
+            move|toggle| {Message::FilterUpdate(
+                FilterMessage::ToggleSkill(toggle, 6)
+            )}
         )
         .spacing(5);
 
         let boost_check = Checkbox::new(
             self.boost_toggle,
             "Double Boost",
-            move|toggle| {Message::ToggleSkill(toggle, 7)}
+            move|toggle| {Message::FilterUpdate(
+                FilterMessage::ToggleSkill(toggle, 7)
+            )}
         )
         .spacing(5);
 
         let up_check = Checkbox::new(
             self.up_toggle,
             "Multi-Up",
-            move|toggle| {Message::ToggleSkill(toggle, 8)}
+            move|toggle| {Message::FilterUpdate(
+                FilterMessage::ToggleSkill(toggle, 8)
+            )}
         )
         .spacing(5);
 
         let oc_check = Checkbox::new(
             self.oc_toggle,
             "Overclock",
-            move|toggle| {Message::ToggleSkill(toggle, 10)}
+            move|toggle| {Message::FilterUpdate(
+                FilterMessage::ToggleSkill(toggle, 10)
+            )}
         )
         .spacing(5);
 
         let or_check = Checkbox::new(
             self.or_toggle,
             "Overrun",
-            move|toggle| {Message::ToggleSkill(toggle, 11)}
+            move|toggle| {Message::FilterUpdate(
+                FilterMessage::ToggleSkill(toggle, 11)
+            )}
         )
         .spacing(5);
 

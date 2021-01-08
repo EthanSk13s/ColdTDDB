@@ -10,6 +10,13 @@ use crate::app::Message;
 use crate::styles;
 
 #[derive(Debug, Clone)]
+pub enum FilterMessage {
+    ToggleRarity(bool, i32),
+    ToggleType(bool, i32),
+    ToggleSkill(bool, i16),
+}
+
+#[derive(Debug, Clone)]
 pub struct CardButton {
     name: String,
     pub id: i32,
@@ -70,6 +77,42 @@ impl ListFilters {
             skill_filter: SkillFilter::new()
         }
     }
+
+    pub fn update(&mut self, message: FilterMessage) {
+        match message {
+            FilterMessage::ToggleRarity(toggle, rarity) => {
+                if toggle == false {
+                    self.rarity_filter.current_filters
+                        .retain(|&x| x != rarity);
+                    self.rarity_filter.set_state(rarity, toggle)
+                } else {
+                    self.rarity_filter.current_filters.push(rarity);
+                    self.rarity_filter.set_state(rarity, toggle)
+                };
+            }
+            FilterMessage::ToggleType(toggle, idol_type) => {
+                if toggle == false {
+                    self.type_filter.current_filters
+                        .retain(|&x| x != idol_type);
+                    self.type_filter.set_state(idol_type, toggle)
+                } else {
+                    self.type_filter.current_filters.push(idol_type);
+                    self.type_filter.set_state(idol_type, toggle)
+                };                
+            }
+            FilterMessage::ToggleSkill(toggle, skill_type) => {
+                if toggle == false {
+                    self.skill_filter.current_filters
+                        .retain(|&x| x != skill_type as i32);
+                    self.skill_filter.set_state(skill_type, toggle)
+                } else {
+                    self.skill_filter.current_filters.push(skill_type.into());
+                    self.skill_filter.set_state(skill_type, toggle)
+                }
+            }
+        }
+    }
+
     pub fn view(&mut self) -> Element<Message> {
         let filter_column = Column::new();
         let first_row = Row::new();

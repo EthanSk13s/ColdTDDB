@@ -2,7 +2,7 @@ use iced::{
     Container, Command, Application, Element, Column, Length, Text, image
 };
 
-use crate::components::{CardView, CardListPage, IdolList};
+use crate::components::{CardView, CardListPage, IdolList, FilterMessage};
 use crate::db;
 
 pub struct App {
@@ -12,9 +12,6 @@ pub struct App {
     current_card: CardView,
     offset: i32,
     previous_offsets: Vec<i32>,
-    rarity_filter: Vec<i32>,
-    type_filter: Vec<i32>,
-    skill_filter: Vec<i32>,
     idol_filter: i32,
     filter: String,
     min: i32
@@ -35,9 +32,7 @@ pub enum Message {
     CardLoaded(Result<CardView, db::Error>),
     CardPressed(i32),
     CardsListed(Result<CardListPage, db::Error>),
-    ToggleRarity(bool, i32),
-    ToggleType(bool, i32),
-    ToggleSkill(bool, i16),
+    FilterUpdate(FilterMessage),
     PickIdol(IdolList),
     NextPage,
     PreviousPage,
@@ -49,57 +44,60 @@ impl App {
         let mut rarity_filter = String::from("rarity IN (");
 
         rarity_filter = App::check_len(
-            &self.rarity_filter,
+            &self.card_list.filter.rarity_filter.current_filters,
             &mut rarity_filter,
             11
         );
 
-        if self.rarity_filter.len() == 0 {
+        if self.card_list.filter.rarity_filter.current_filters.len() == 0 {
             rarity_filter.push_str("1,2,3,4)");
             
             for x in vec![1,2,3,4] {
                 self.card_list.filter.rarity_filter
                     .set_state(x, true);
 
-                self.rarity_filter.push(x)
+                self.card_list.filter.
+                    rarity_filter.current_filters.push(x)
             }
         }
 
         let mut type_filter = String::from("idol_type IN (");
 
         type_filter = App::check_len(
-            &self.type_filter, 
+            &self.card_list.filter.type_filter.current_filters, 
             &mut type_filter, 
             14
         );
 
-        if self.type_filter.len() == 0 {
+        if self.card_list.filter.type_filter.current_filters.len() == 0 {
             type_filter.push_str("1,2,3,5)");
 
             for x in vec![1,2,3,5] {
                 self.card_list.filter.type_filter
                     .set_state(x, true);
 
-                self.type_filter.push(x)
+                self.card_list.filter
+                    .type_filter.current_filters.push(x)
             }
         }
 
         let mut skill_filter = String::from("skill_id IN (");
 
         skill_filter = App::check_len(
-            &self.skill_filter,
+            &self.card_list.filter.skill_filter.current_filters,
             &mut skill_filter,
             13
         );
 
-        if self.skill_filter.len() == 0 {
+        if self.card_list.filter.skill_filter.current_filters.len() == 0 {
             skill_filter.push_str("1,2,3,4,5,6,7,8,10,11");
 
             for x in vec![1,2,3,4,5,6,7,18,10,11] {
                 self.card_list.filter.skill_filter
                     .set_state(x, true);
 
-                self.skill_filter.push(x.into())
+                self.card_list.filter
+                    .skill_filter.current_filters.push(x.into())
             }
         }
 
@@ -152,9 +150,6 @@ impl Application for App {
                 ),
                 offset: 0,
                 previous_offsets: vec![1],
-                rarity_filter: vec![1,2,3,4],
-                type_filter: vec![1,2,3,5],
-                skill_filter: vec![1,2,3,4,5,6,7,8,10,11],
                 idol_filter: 0,
                 filter: String::from(
                     r#"rarity in (1,2,3,4)
@@ -240,66 +235,6 @@ impl Application for App {
                     self.filter.to_owned()),
                     Message::CardsListed)
             }
-            Message::ToggleRarity(toggle, rarity) => {
-                if toggle == false {
-                    self.rarity_filter.retain(|&x| x != rarity);
-                    self.card_list.filter.rarity_filter
-                        .set_state(rarity, toggle)
-                } else {
-                    self.rarity_filter.push(rarity);
-                    self.card_list.filter.rarity_filter
-                        .set_state(rarity, toggle)
-                };
-
-                self.offset = 0;
-                self.min = 0;
-                self.construct_filter();
-                Command::perform(self.db.clone().get_card_list(
-                    self.card_list.clone(),
-                    self.offset,
-                    self.filter.to_owned()),
-                    Message::CardsListed)
-            }
-            Message::ToggleType(toggle, idol_type) => {
-                if toggle == false {
-                    self.type_filter.retain(|&x| x != idol_type);
-                    self.card_list.filter.type_filter
-                        .set_state(idol_type, toggle)
-                } else {
-                    self.type_filter.push(idol_type);
-                    self.card_list.filter.type_filter
-                        .set_state(idol_type, toggle)
-                };
-
-                self.offset = 0;
-                self.min = 0;
-                self.construct_filter();
-                Command::perform(self.db.clone().get_card_list(
-                    self.card_list.clone(),
-                    self.offset,
-                    self.filter.to_owned()),
-                    Message::CardsListed)
-            }
-            Message::ToggleSkill(toggle, skill_type) => {
-                if toggle == false {
-                    self.skill_filter.retain(|&x| x != skill_type as i32);
-                    self.card_list.filter.skill_filter
-                        .set_state(skill_type, toggle)
-                } else {
-                    self.skill_filter.push(skill_type.into());
-                    self.card_list.filter.skill_filter
-                        .set_state(skill_type, toggle)
-                }
-
-                self.offset = 0;
-                self.min = 0;
-                self.construct_filter();
-                Command::perform(self.db.clone().get_card_list(
-                    self.card_list.clone(),
-                    self.offset,
-                    self.filter.to_owned()),
-                    Message::CardsListed)
-            }
             Message::ReturnToList => {
                 Command::perform(self.db.clone().get_card_list(
                     self.card_list.clone(),
@@ -310,6 +245,18 @@ impl Application for App {
             Message::PickIdol(idol) => {
                 self.idol_filter = idol as i32;
                 self.card_list.filter.idol_filter.selected = idol;
+
+                self.offset = 0;
+                self.min = 0;
+                self.construct_filter();
+                Command::perform(self.db.clone().get_card_list(
+                    self.card_list.clone(),
+                    self.offset,
+                    self.filter.to_owned()),
+                    Message::CardsListed)
+            }
+            Message::FilterUpdate(filter_message) => {
+                self.card_list.filter.update(filter_message);
 
                 self.offset = 0;
                 self.min = 0;
