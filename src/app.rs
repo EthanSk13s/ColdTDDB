@@ -90,9 +90,9 @@ impl App {
         );
 
         if self.card_list.filter.skill_filter.current_filters.len() == 0 {
-            skill_filter.push_str("1,2,3,4,5,6,7,8,10,11");
+            skill_filter.push_str("1,2,3,4,5,6,7,8,10,11)");
 
-            for x in vec![1,2,3,4,5,6,7,18,10,11] {
+            for x in vec![1,2,3,4,5,6,7,8,10,11] {
                 self.card_list.filter.skill_filter
                     .set_state(x, true);
 
