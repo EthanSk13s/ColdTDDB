@@ -43,7 +43,7 @@ pub struct JsonCard {
     rarity: i16,
     idol_type: i16,
     extra_type: i16,
-    #[serde(default="test")]
+    #[serde(default="skill_default")]
     pub skill: Vec<JsonSkill>,
     #[serde(default)]
     center_effect: JsonCenter,
@@ -67,7 +67,6 @@ pub struct JsonCard {
 #[serde(rename_all="camelCase")]
 pub struct JsonSkill {
     id: i32,
-    description: String,
     pub effect_id: i16,
     pub evaluation: i16,
     pub evaluation2: i16,
@@ -77,10 +76,9 @@ pub struct JsonSkill {
     pub value: Vec<i32>
 }
 
-fn test() -> Vec<JsonSkill> {
+fn skill_default() -> Vec<JsonSkill> {
     let result = vec![JsonSkill {
         id: 0,
-        description: String::from("null"),
         effect_id: 0,
         evaluation: 0,
         evaluation2: 0,
