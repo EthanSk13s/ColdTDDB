@@ -14,7 +14,7 @@ pub struct DbCard {
     idol_id: i32,
     pub name: String,
     pub rarity: i32,
-    idol_type: i8,
+    pub idol_type: i8,
     pub extra_type: i8,
     pub skill_id: i16,
     pub skill: String,
@@ -25,12 +25,12 @@ pub struct DbCard {
     pub vocal_max: i32,
     pub dance_max: i32,
     pub visual_max: i32,
-    vocal_min_awakened: i32,
+     vocal_min_awakened: i32,
     dance_min_awakened: i32,
     visual_min_awakened: i32,
-    vocal_max_awakened: i32,
-    dance_max_awakened: i32,
-    visual_max_awakened: i32,
+    pub vocal_max_awakened: i32,
+    pub dance_max_awakened: i32,
+    pub visual_max_awakened: i32,
     pub resource_id: String
 }
 
@@ -253,11 +253,7 @@ impl TDDatabase {
 
             let icon = Self::handle_image(&client, file_path, url).await?;
 
-            buttons.push(CardButton::new(
-                card.card_id, 
-                card.name, icon, 
-                card.idol_type
-            ));
+            buttons.push(CardButton::new(icon, card));
         }
 
         let mut card_list = current;

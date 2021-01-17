@@ -1,7 +1,7 @@
 use iced::{
     button, Button, Column, Element,
     Align, Text, Row, scrollable, Scrollable,
-    Length, image, Image
+    Length, image, Image, Space
 };
 
 use super::filters::{RarityFilter, TypeFilter, IdolFilter, SkillFilter};
@@ -18,41 +18,74 @@ pub enum FilterMessage {
 
 #[derive(Debug, Clone)]
 pub struct CardButton {
-    name: String,
-    pub id: i32,
     link: button::State,
     icon: image::Handle,
-    idol_type: i8
+    pub card: db::DbCard
 }
 
 impl CardButton {
-    pub fn new(id: i32, name: String, icon: image::Handle, idol_type: i8) -> CardButton {
+    pub fn new(icon: image::Handle, card: db::DbCard) -> CardButton {
         CardButton {
-            name,
-            id,
             link: button::State::new(),
             icon,
-            idol_type
+            card
         }
     }
 
     pub fn view(&mut self) -> Element<Message> {
-        let content = Row::new()
+        let mini_info = Row::new()
             .push(
-                Image::new(self.icon.clone())
+                Column::new()
+                    .push(
+                        Row::new()
+                            .spacing(10)
+                            .push(
+                                Text::new(
+                                    format!(
+                                        "Vo: {}", 
+                                        self.card.vocal_max_awakened
+                                    )
+                                ).size(18)
+                            )
+                            .push(
+                                Text::new(
+                                    format!(
+                                        "Da: {}",
+                                        self.card.dance_max_awakened
+                                    )
+                                ).size(18)
+                            )
+                            .push(
+                                Text::new(
+                                    format!(
+                                        "Vi: {}",
+                                        self.card.visual_max_awakened
+                                    )
+                                ).size(18)
+                            )
+                    )
+            );
+
+        let content = Row::with_children(vec![
+            Row::new().push(Image::new(self.icon.clone())
                 .width(Length::Units(50))
-                .height(Length::Units(50))
-            )
-            .push(
-                Text::new(self.name.to_owned())
-                .size(30)
-            )
-            .align_items(Align::Center);
+                .height(Length::Units(50)))
+                .push(
+                    Text::new(self.card.name.to_owned())
+                    .size(30)
+                ).align_items(Align::Center)
+                .width(Length::FillPortion(2)).into(),
+            Space::with_width(Length::FillPortion(2)).into(),
+            mini_info.into(),
+            Space::with_width(Length::FillPortion(2)).into()
+        ]);
+
         let link_button = Button::new(&mut self.link, content)
-            .on_press(Message::CardPressed(self.id))
+            .on_press(Message::CardPressed(self.card.card_id))
             .style(styles::CardButtonStyle {
-                idol_type: self.idol_type
-            });
+                idol_type: self.card.idol_type
+            })
+            .width(Length::Fill);
 
         Row::new()
             .align_items(Align::Start)
@@ -173,7 +206,7 @@ impl CardListPage {
     pub fn view<'a>(&'a mut self) -> Element<Message> {
         let column = Column::new();
         let mut content = Scrollable::new(&mut self.state);
-        let first_card = self.cards[0].id;
+        let first_card = self.cards[0].card.card_id;
         let size = self.cards.len();
 
         for card in self.cards.iter_mut() {

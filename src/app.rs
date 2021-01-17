@@ -202,7 +202,7 @@ impl Application for App {
                     let min = self.previous_offsets.get(0);
                     self.min = match min {
                         Some(id) => *id,
-                        None => cards.clone().unwrap().cards[0].id
+                        None => cards.clone().unwrap().cards[0].card.card_id
                     };
 
                     self.state = AppState::CardList{cards}
@@ -213,8 +213,8 @@ impl Application for App {
                 Command::none()
             }
             Message::NextPage => {
-                self.offset = self.card_list.cards[24].id;
-                self.previous_offsets.push(self.card_list.cards[0].id);
+                self.offset = self.card_list.cards[24].card.card_id;
+                self.previous_offsets.push(self.card_list.cards[0].card.card_id);
 
                 Command::perform(self.db.clone().get_card_list(
                     self.card_list.clone(),
