@@ -8,6 +8,7 @@ use super::filters::{RarityFilter, TypeFilter, IdolFilter, SkillFilter};
 use crate::db;
 use crate::app::Message;
 use crate::styles;
+use crate::princess;
 
 #[derive(Debug, Clone)]
 pub enum FilterMessage {
@@ -62,6 +63,16 @@ impl CardButton {
                                         self.card.visual_max_awakened
                                     )
                                 ).size(18)
+                            )
+                    ).push(
+                        Row::new()
+                            .push(
+                                Text::new(
+                                    format!(
+                                        "Skill: {}",
+                                        princess::match_skill_type(self.card.skill_id)
+                                    )
+                                )
                             )
                     )
             );
