@@ -83,11 +83,11 @@ impl CardButton {
                 .height(Length::Units(50)))
                 .push(
                     Text::new(self.card.name.to_owned())
-                    .size(30)
+                    .size(24)
                 ).align_items(Align::Center)
                 .width(Length::FillPortion(2)).into(),
             Space::with_width(Length::FillPortion(2)).into(),
-            mini_info.into(),
+            mini_info.width(Length::FillPortion(3)).into(),
             Space::with_width(Length::FillPortion(2)).into()
         ]);
 
