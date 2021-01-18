@@ -14,8 +14,8 @@ use rusqlite::Connection;
 
 fn main() -> iced::Result {
     // Hacky way to make a DB in runtime, but sqlx does not support it yet?
-    if Path::new("ayaya.db").exists() == false {
-        let _conn = Connection::open("ayaya.db");
+    if Path::new("cache/td.db").exists() == false {
+        let _conn = Connection::open("cache/td.db");
     };
 
     if Path::new("cache").exists() == false {

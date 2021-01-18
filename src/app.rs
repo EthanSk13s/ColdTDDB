@@ -136,7 +136,7 @@ impl Application for App {
     type Flags = ();
 
     fn new(_flags: ()) -> (Self, Command<Message>) {
-        let tddb = db::TDDatabase::new("sqlite:ayaya.db").unwrap();
+        let tddb = db::TDDatabase::new("sqlite:cache/td.db").unwrap();
         let td_clone = tddb.clone();
         (
             App {
