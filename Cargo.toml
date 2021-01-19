@@ -17,8 +17,8 @@ lazy_static = "1.4.0"
 tokio = { version = "0.2", features = ["fs"]}
 
 [dependencies.sqlx]
-version = "0.4.0"
-features = ["runtime-tokio-rustls", "sqlite", "chrono"]
+version = "0.4.2"
+features = ["runtime-tokio-rustls", "sqlite", "chrono", "json"]
 
 [dependencies.rusqlite]
 version = "0.24.1"
