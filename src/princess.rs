@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use regex::Regex;
+use serde_json::from_value;
 
 use super::db;
 
@@ -118,21 +119,21 @@ pub fn set_name(query: String) -> String {
     };
 }
 
-pub fn tl_skill(skill: &db::JsonSkill) -> String {
-    let interval = format_interval(skill.interval, skill.probability);
-    let duration = format_duration(skill.duration);
+pub fn tl_skill(card: &db::DbCard) -> String {
+    let interval = format_interval(card.interval, card.probability);
+    let duration = format_duration(card.duration);
 
-    let eval1 = match_evaluations(skill.evaluation);
-    let eval2 = match_evaluations(skill.evaluation2);
+    let eval1 = match_evaluations(card.evaluation);
+    let eval2 = match_evaluations(card.evaluation2);
 
     let effect = match_effect(
-        skill.effect_id, String::from(eval1),
-        String::from(eval2), skill.value.clone()
+        card.effect, String::from(eval1),
+        String::from(eval2), from_value(card.value.clone()).unwrap()
     );
 
-    if skill.effect_id == 4 {
+    if card.effect == 4 {
         return format!("{} {} {}", interval, effect, duration);
-    } else if skill.effect_id == 0 {
+    } else if card.effect == 0 {
         return String::from("null")
     };
 

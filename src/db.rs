@@ -17,7 +17,6 @@ pub struct DbCard {
     pub idol_type: i8,
     pub extra_type: i8,
     pub skill_id: i16,
-    pub skill: String,
     pub center_skill: String,
     pub vocal_min: i32,
     pub dance_min: i32,
@@ -167,7 +166,6 @@ impl TDDatabase {
                 idol_type INTEGER,
                 extra_type INTEGER,
                 skill_id INTEGER,
-                skill TEXT,
                 center_skill TEXT,
                 vocal_min INTEGER,
                 dance_min INTEGER,
@@ -213,7 +211,7 @@ impl TDDatabase {
     pub async fn get_card(self, card_id: i32) -> Result<CardView, Error> {
         let card = sqlx::query_as::<_, DbCard>(
             "SELECT * FROM cards 
-                INNER JOIN skills USING(cards.skill_id)
+                INNER JOIN skills USING(skill_id)
             WHERE card_id = $1"
         )
         .bind(card_id)
@@ -294,9 +292,9 @@ impl TDDatabase {
             );
 
             INSERT INTO cards VALUES(
-                null, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,
-                $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29,
-                $30
+                null, $9, $10, $11, $12, $13, $14, $15, $16, $17,
+                $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28,
+                $29
             );"#)
             .bind(card.skill[0].id)
             .bind(card.skill[0].effect_id)
@@ -313,7 +311,6 @@ impl TDDatabase {
             .bind(card.idol_type)
             .bind(card.extra_type)
             .bind(card.skill[0].id)
-            .bind(princess::tl_skill(&card.skill[0]))
             .bind(princess::tl_center_skill(&card.center_effect))
             .bind(card.vocal_min)
             .bind(card.dance_min)

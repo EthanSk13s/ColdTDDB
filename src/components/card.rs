@@ -1,23 +1,14 @@
 use iced::{Column, Element, Align, Text, 
     image, Image, button, Button, 
-    Row, Length, scrollable, Scrollable};
+    Row, Length, scrollable, Scrollable
+};
 
 use crate::{db, princess};
 use crate::app::Message;
 
 #[derive(Debug, Clone)]
 pub struct CardView {
-    name: String,
-    rarity: i32,
-    skill_id: i16,
-    skill: String,
-    center_skill: String,
-    min_vocal: i32,
-    max_vocal: i32,
-    min_dance: i32,
-    max_dance: i32,
-    min_visual: i32,
-    max_visual: i32,
+    card: db::DbCard,
     bg: image::Handle,
     card_art: image::Handle,
     back_button: button::State,
@@ -28,17 +19,7 @@ impl CardView {
     pub fn new(card: db::DbCard,
         bg: image::Handle, card_art: image::Handle) -> CardView {
         CardView {
-            name: card.name.clone(),
-            rarity: card.rarity,
-            skill_id: card.skill_id,
-            skill: card.skill.clone(),
-            center_skill: card.center_skill.clone(),
-            min_vocal: card.vocal_min,
-            max_vocal: card.vocal_max,
-            min_dance: card.dance_min,
-            max_dance: card.dance_max,
-            min_visual: card.visual_min,
-            max_visual: card.visual_max,
+            card,
             bg,
             card_art,
             back_button: button::State::new(),
@@ -50,32 +31,32 @@ impl CardView {
         let values = Column::new()
             .push(
                 Text::new(
-                    format!("Vocal: {}", &self.max_vocal.to_string())
+                    format!("Vocal: {}", &self.card.vocal_max_awakened)
                 )
             )
             .push(
                 Text::new(
-                    format!("Dance: {}", &self.max_dance.to_string())
+                    format!("Dance: {}", &self.card.dance_max_awakened)
                 )
             )
             .push(
                 Text::new(
-                    format!("Visual: {}", &self.max_visual.to_string())
+                    format!("Visual: {}", &self.card.visual_max_awakened)
                 )
             )
             .push(
                 Text::new(
-                    format!("Skill Type: {}", princess::match_skill_type(self.skill_id))
+                    format!("Skill Type: {}", princess::match_skill_type(self.card.effect))
                 )
             )
             .push(
                 Text::new(
-                    format!("Skill: {}", &self.skill)
+                    format!("Skill: {}", princess::tl_skill(&self.card))
                 )
             )
             .push(
                 Text::new(
-                    format!("Center Skill: {}", &self.center_skill)
+                    format!("Center Skill: {}", &self.card.center_skill)
                 )
             )
             .padding(5)
@@ -102,7 +83,7 @@ impl CardView {
             .height(Length::Fill)
             .width(Length::Fill)
             .push(
-                Text::new(&self.name)
+                Text::new(&self.card.name)
                     .size(42)
             )
             .push(info)
