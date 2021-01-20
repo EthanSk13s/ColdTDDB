@@ -70,7 +70,7 @@ impl CardButton {
                                 Text::new(
                                     format!(
                                         "Skill: {}",
-                                        princess::match_skill_type(self.card.skill_id)
+                                        princess::match_skill_type(self.card.effect)
                                     )
                                 )
                             )

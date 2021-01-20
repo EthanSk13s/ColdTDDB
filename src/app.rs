@@ -81,12 +81,12 @@ impl App {
             }
         }
 
-        let mut skill_filter = String::from("skill_id IN (");
+        let mut skill_filter = String::from("skills.effect IN (");
 
         skill_filter = App::check_len(
             &self.card_list.filter.skill_filter.current_filters,
             &mut skill_filter,
-            13
+            18
         );
 
         if self.card_list.filter.skill_filter.current_filters.len() == 0 {

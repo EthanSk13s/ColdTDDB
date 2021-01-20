@@ -25,13 +25,21 @@ pub struct DbCard {
     pub vocal_max: i32,
     pub dance_max: i32,
     pub visual_max: i32,
-     vocal_min_awakened: i32,
+    vocal_min_awakened: i32,
     dance_min_awakened: i32,
     visual_min_awakened: i32,
     pub vocal_max_awakened: i32,
     pub dance_max_awakened: i32,
     pub visual_max_awakened: i32,
-    pub resource_id: String
+    pub resource_id: String,
+    // JOIN from skills table here
+    pub effect: i16,
+    pub evaluation: i16,
+    pub evaluation2: i16,
+    pub duration: i16,
+    pub interval: i16,
+    pub probability: i16,
+    pub value: serde_json::Value
 }
 
 #[derive(Deserialize)]
@@ -139,6 +147,17 @@ impl TDDatabase {
     pub async fn create_tables(&self) -> Result<(), sqlx::Error> {
         sqlx::query(
             r#"
+            CREATE TABLE IF NOT EXISTS skills(
+                skill_id INTEGER PRIMARY KEY NOT NULL,
+                effect INTEGER,
+                evaluation INTEGER,
+                evaluation2 INTEGER,
+                duration INTEGER,
+                interval INTEGER,
+                probability INTEGER,
+                value json
+            );
+
             CREATE TABLE IF NOT EXISTS cards(
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 card_id INTEGER,
@@ -162,8 +181,10 @@ impl TDDatabase {
                 vocal_max_awakened INTEGER,
                 dance_max_awakened INTEGER,
                 visual_max_awakened INTEGER,
-                resource_id TEXT
-            )
+                resource_id TEXT,
+                FOREIGN KEY(skill_id) 
+                    REFERENCES skills(skill_id)
+            );
             "#
         ).execute(&self.pool).await?;
     
@@ -191,7 +212,9 @@ impl TDDatabase {
 
     pub async fn get_card(self, card_id: i32) -> Result<CardView, Error> {
         let card = sqlx::query_as::<_, DbCard>(
-            "SELECT * FROM cards WHERE card_id = $1"
+            "SELECT * FROM cards 
+                INNER JOIN skills USING(cards.skill_id)
+            WHERE card_id = $1"
         )
         .bind(card_id)
         .fetch_one(&self.pool).await?;
@@ -226,8 +249,9 @@ impl TDDatabase {
     pub async fn get_card_list(
         self, current: CardListPage,
         offset: i32, filter: String) -> Result<CardListPage, Error> {
-        let query = format!(
-            r#"SELECT * FROM cards
+        let query = format!(r#"
+            SELECT * FROM cards
+                INNER JOIN skills USING(skill_id)
             WHERE card_id > $1
             AND {}
             ORDER BY card_id
@@ -264,19 +288,31 @@ impl TDDatabase {
     async fn add_card(&self, card: JsonCard) -> Result<(), Error> {
         // This is so prone to SQL injections, but for sake of pracitce leave it be...
         sqlx::query(
-            r#"INSERT INTO cards
-        VALUES (
-            null, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-            $11, $12, $13, $14, $15, $16, $17, $18, $19, $20,
-            $21, $22
-        )"#)
+            r#"
+            INSERT OR IGNORE INTO skills VALUES(
+                $1, $2, $3, $4, $5, $6, $7, $8
+            );
+
+            INSERT INTO cards VALUES(
+                null, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,
+                $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29,
+                $30
+            );"#)
+            .bind(card.skill[0].id)
+            .bind(card.skill[0].effect_id)
+            .bind(card.skill[0].evaluation)
+            .bind(card.skill[0].evaluation2)
+            .bind(card.skill[0].duration)
+            .bind(card.skill[0].interval)
+            .bind(card.skill[0].probability)
+            .bind(serde_json::to_string(&card.skill[0].value).unwrap())
             .bind(card.id)
             .bind(card.rarity)
             .bind(card.idol_id)
             .bind(princess::set_name(card.name))
             .bind(card.idol_type)
             .bind(card.extra_type)
-            .bind(card.skill[0].effect_id)
+            .bind(card.skill[0].id)
             .bind(princess::tl_skill(&card.skill[0]))
             .bind(princess::tl_center_skill(&card.center_effect))
             .bind(card.vocal_min)
@@ -300,7 +336,7 @@ impl TDDatabase {
     async fn check_exists(&self) -> Result<bool, Error> {
         #[derive(sqlx::FromRow)]
         struct Tables { name: String }
-        let check = sqlx::query_as::<_, Tables>("SELECT name FROM sqlite_master WHERE type='table' AND name='cards'")
+        let check = sqlx::query_as::<_, Tables>("SELECT name FROM sqlite_master WHERE type='table'")
             .fetch_all(&self.pool)
             .await?;
 
