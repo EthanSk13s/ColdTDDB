@@ -56,7 +56,7 @@ pub struct JsonCard {
     idol_type: i16,
     extra_type: i16,
     #[serde(default="skill_default")]
-    pub skill: Vec<JsonSkill>,
+    skill: Vec<JsonSkill>,
     #[serde(default)]
     center_effect: JsonCenter,
     // release: String,
@@ -77,15 +77,15 @@ pub struct JsonCard {
 
 #[derive(Deserialize)]
 #[serde(rename_all="camelCase")]
-pub struct JsonSkill {
+struct JsonSkill {
     id: i32,
-    pub effect_id: i16,
-    pub evaluation: i16,
-    pub evaluation2: i16,
-    pub duration: i16,
-    pub interval: i16,
-    pub probability: i16,
-    pub value: Vec<i32>
+    effect_id: i16,
+    evaluation: i16,
+    evaluation2: i16,
+    duration: i16,
+    interval: i16,
+    probability: i16,
+    value: Vec<i32>
 }
 
 fn skill_default() -> Vec<JsonSkill> {
@@ -104,16 +104,15 @@ fn skill_default() -> Vec<JsonSkill> {
 
 #[derive(Deserialize)]
 #[serde(rename_all="camelCase")]
-pub struct JsonCenter {
+struct JsonCenter {
     id: i32,
-    pub description: String,
-    pub idol_type: i16,
-    pub attribute: i16,
-    pub value: i32,
+    idol_type: i16,
+    attribute: i16,
+    value: i32,
     #[serde(default="set_song")]
-    pub song_type: i16,
+    song_type: i16,
     #[serde(default="set_value_2")]
-    pub value_2: i32
+    value_2: i32
 }
 
 fn set_song() -> i16 { 0 }
@@ -123,7 +122,6 @@ impl Default for JsonCenter{
     fn default() -> Self {
         let result = JsonCenter {
             id: 0,
-            description: String::from("null"),
             idol_type: 0,
             attribute: 0,
             value: 0,
