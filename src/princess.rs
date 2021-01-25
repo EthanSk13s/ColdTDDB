@@ -140,16 +140,16 @@ pub fn tl_skill(card: &db::DbCard) -> String {
     format!("{} {} {}", interval, effect, duration)
 }
 
-pub fn tl_center_skill(skill: &db::JsonCenter) -> String {
-    if skill.description != String::from("スキルなし") {
-        let idol_type = match_idol_type(skill.idol_type);
-        let attribute = match_attributes(skill.attribute);
+pub fn tl_center_skill(card: &db::DbCard) -> String {
+    if card.idol_effect != 0 {
+        let idol_type = match_idol_type(card.idol_effect);
+        let attribute = match_attributes(card.attribute);
 
-        let first_cond = format_center(idol_type, attribute, skill.value);
+        let first_cond = format_center(idol_type, attribute, card.center_value);
 
-        if skill.song_type != 0 {
-            let song = match_song_type(skill.song_type);
-            let second_cond = format_song(song, skill.value_2);
+        if card.song_type != 0 {
+            let song = match_song_type(card.song_type);
+            let second_cond = format_song(song, card.center_value_2);
 
             return format!("{} {}", first_cond, second_cond);
         } else {

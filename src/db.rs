@@ -17,7 +17,6 @@ pub struct DbCard {
     pub idol_type: i8,
     pub extra_type: i8,
     pub skill_id: i16,
-    pub center_skill: String,
     pub vocal_min: i32,
     pub dance_min: i32,
     pub visual_min: i32,
@@ -38,7 +37,13 @@ pub struct DbCard {
     pub duration: i16,
     pub interval: i16,
     pub probability: i16,
-    pub value: serde_json::Value
+    pub value: serde_json::Value,
+    // JOIN from centers table here
+    pub idol_effect: i16,
+    pub attribute: i16,
+    pub center_value: i32,
+    pub song_type: i16,
+    pub center_value_2: i32
 }
 
 #[derive(Deserialize)]
@@ -146,6 +151,15 @@ impl TDDatabase {
     pub async fn create_tables(&self) -> Result<(), sqlx::Error> {
         sqlx::query(
             r#"
+            CREATE TABLE IF NOT EXISTS centers(
+                center_id INTEGER PRIMARY KEY NOT NULL,
+                idol_effect INTEGER,
+                attribute INTEGER,
+                song_type INTEGER,
+                center_value INTEGER,
+                center_value_2 INTEGER
+            );
+
             CREATE TABLE IF NOT EXISTS skills(
                 skill_id INTEGER PRIMARY KEY NOT NULL,
                 effect INTEGER,
@@ -166,7 +180,7 @@ impl TDDatabase {
                 idol_type INTEGER,
                 extra_type INTEGER,
                 skill_id INTEGER,
-                center_skill TEXT,
+                center_id INTEGER,
                 vocal_min INTEGER,
                 dance_min INTEGER,
                 visual_min INTEGER,
@@ -182,6 +196,8 @@ impl TDDatabase {
                 resource_id TEXT,
                 FOREIGN KEY(skill_id) 
                     REFERENCES skills(skill_id)
+                FOREIGN KEY(center_id)
+                    REFERENCES centers(center_id)
             );
             "#
         ).execute(&self.pool).await?;
@@ -212,6 +228,7 @@ impl TDDatabase {
         let card = sqlx::query_as::<_, DbCard>(
             "SELECT * FROM cards 
                 INNER JOIN skills USING(skill_id)
+                INNER JOIN centers USING(center_id)
             WHERE card_id = $1"
         )
         .bind(card_id)
@@ -250,6 +267,7 @@ impl TDDatabase {
         let query = format!(r#"
             SELECT * FROM cards
                 INNER JOIN skills USING(skill_id)
+                INNER JOIN centers USING(center_id)
             WHERE card_id > $1
             AND {}
             ORDER BY card_id
@@ -287,15 +305,25 @@ impl TDDatabase {
         // This is so prone to SQL injections, but for sake of pracitce leave it be...
         sqlx::query(
             r#"
+            INSERT OR IGNORE INTO centers VALUES(
+                $1, $2, $3, $4, $5, $6
+            );
+
             INSERT OR IGNORE INTO skills VALUES(
-                $1, $2, $3, $4, $5, $6, $7, $8
+                $7, $8, $9, $10, $11, $12, $13, $14
             );
 
             INSERT INTO cards VALUES(
-                null, $9, $10, $11, $12, $13, $14, $15, $16, $17,
-                $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28,
-                $29
+                null, $15, $16, $17, $18, $19, $20, $21, $22, $23,
+                $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34,
+                $35
             );"#)
+            .bind(card.center_effect.id)
+            .bind(card.center_effect.idol_type)
+            .bind(card.center_effect.attribute)
+            .bind(card.center_effect.song_type)
+            .bind(card.center_effect.value)
+            .bind(card.center_effect.value_2)
             .bind(card.skill[0].id)
             .bind(card.skill[0].effect_id)
             .bind(card.skill[0].evaluation)
@@ -311,7 +339,7 @@ impl TDDatabase {
             .bind(card.idol_type)
             .bind(card.extra_type)
             .bind(card.skill[0].id)
-            .bind(princess::tl_center_skill(&card.center_effect))
+            .bind(card.center_effect.id)
             .bind(card.vocal_min)
             .bind(card.dance_min)
             .bind(card.visual_min)

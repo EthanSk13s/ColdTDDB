@@ -56,7 +56,7 @@ impl CardView {
             )
             .push(
                 Text::new(
-                    format!("Center Skill: {}", &self.card.center_skill)
+                    format!("Center Skill: {}", princess::tl_center_skill(&self.card))
                 )
             )
             .padding(5)
