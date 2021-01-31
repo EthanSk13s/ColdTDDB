@@ -34,7 +34,7 @@ impl CardButton {
     }
 
     pub fn view(&mut self) -> Element<Message> {
-        let mini_info = Row::new()
+        let detail_info = Row::new()
             .push(
                 Column::new()
                     .push(
@@ -87,17 +87,19 @@ impl CardButton {
                     )
             );
 
+        let card_info = Row::new().push(Image::new(self.icon.clone())
+            .width(Length::Units(50))
+            .height(Length::Units(50)))
+            .push(
+                Text::new(self.card.name.to_owned())
+                .size(24)
+            ).align_items(Align::Center)
+            .width(Length::FillPortion(2));
+
         let content = Row::with_children(vec![
-            Row::new().push(Image::new(self.icon.clone())
-                .width(Length::Units(50))
-                .height(Length::Units(50)))
-                .push(
-                    Text::new(self.card.name.to_owned())
-                    .size(24)
-                ).align_items(Align::Center)
-                .width(Length::FillPortion(2)).into(),
+            card_info.into(),
             Space::with_width(Length::FillPortion(2)).into(),
-            mini_info.width(Length::FillPortion(3)).into(),
+            detail_info.width(Length::FillPortion(3)).into(),
             Space::with_width(Length::FillPortion(2)).into()
         ]);
 
