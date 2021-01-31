@@ -158,7 +158,17 @@ pub fn tl_center_skill(card: &db::DbCard) -> String {
     } else {
         String::from("null")
     }
-    
+}
+
+pub fn mini_center(card: &db::DbCard) -> String {
+    if card.idol_effect != 0 {
+        let idol_type = match_idol_type(card.idol_effect);
+        let attribute = match_attributes(card.attribute);
+
+        return format!("{} {}", idol_type, attribute);
+    } else {
+        return String::from("N/A");
+    }
 }
 
 fn match_idol_type(id: i16) -> &'static str {

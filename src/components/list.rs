@@ -74,6 +74,16 @@ impl CardButton {
                                     )
                                 )
                             )
+                    ).push(
+                        Row::new()
+                            .push(
+                                Text::new(
+                                    format!(
+                                        "Center: {}",
+                                        princess::mini_center(&self.card)
+                                    )
+                                )
+                            )
                     )
             );
 
