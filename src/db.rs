@@ -9,7 +9,7 @@ use super::princess;
 
 #[derive(Debug, Clone, Default, sqlx::FromRow)]
 pub struct DbCard {
-    id: i32,
+    pub id: i32,
     pub card_id: i32,
     idol_id: i32,
     pub name: String,
@@ -23,9 +23,9 @@ pub struct DbCard {
     pub vocal_max: i32,
     pub dance_max: i32,
     pub visual_max: i32,
-    vocal_min_awakened: i32,
-    dance_min_awakened: i32,
-    visual_min_awakened: i32,
+    pub vocal_min_awakened: i32,
+    pub dance_min_awakened: i32,
+    pub visual_min_awakened: i32,
     pub vocal_max_awakened: i32,
     pub dance_max_awakened: i32,
     pub visual_max_awakened: i32,

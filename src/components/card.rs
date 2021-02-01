@@ -1,17 +1,31 @@
 use iced::{Column, Element, Align, Text, 
     image, Image, button, Button, 
-    Row, Length, scrollable, Scrollable
+    Row, Length, scrollable, Scrollable,
 };
 
 use crate::{db, princess};
 use crate::app::Message;
 
+// TODO: Make level be inputtable
+
+#[derive(Debug, Clone)]
+pub enum CardMessage {
+    IncreaseLevel,
+    DecreaseLevel
+}
+
 #[derive(Debug, Clone)]
 pub struct CardView {
-    card: db::DbCard,
+    pub card: db::DbCard,
+    current_vocal: i32,
+    current_dance: i32,
+    current_visual: i32,
     bg: image::Handle,
     card_art: image::Handle,
     back_button: button::State,
+    increase_level: button::State,
+    decrease_level: button::State,
+    current_level: i32,
     scroll: scrollable::State
 }
 
@@ -20,28 +34,76 @@ impl CardView {
         bg: image::Handle, card_art: image::Handle) -> CardView {
         CardView {
             card,
+            current_vocal: 0,
+            current_dance: 0,
+            current_visual: 0,
             bg,
             card_art,
+            increase_level: button::State::new(),
+            decrease_level: button::State::new(),
+            current_level: 1,
             back_button: button::State::new(),
             scroll: scrollable::State::new()
         }
     }
 
+    pub fn update(&mut self, message: CardMessage) {
+        match message {
+            CardMessage::IncreaseLevel => {
+                self.current_level += 1;
+            }
+            CardMessage::DecreaseLevel => {
+                self.current_level -= 1;
+            }
+        }
+    }
+
     pub fn view(&mut self) -> Element<Message> {
+        self.calc_level(self.current_level);
+        let mut increase_level = Button::new(
+            &mut self.increase_level, Text::new("+")
+        );
+
+        increase_level = if self.current_level != 90 {
+            increase_level.on_press(
+                Message::CardUpdate(CardMessage::IncreaseLevel)
+            )
+        } else {
+            increase_level
+        };
+
+        let mut decrease_level = Button::new(
+            &mut self.decrease_level, Text::new("-")
+        );
+
+        decrease_level = if self.current_level != 1 {
+            decrease_level.on_press(
+                Message::CardUpdate(CardMessage::DecreaseLevel)
+            )
+        } else {
+            decrease_level
+        };
+
         let values = Column::new()
             .push(
+                Row::new()
+                    .push(decrease_level)
+                    .push(Text::new(self.current_level.to_string()))
+                    .push(increase_level)
+            )
+            .push(
                 Text::new(
-                    format!("Vocal: {}", &self.card.vocal_max_awakened)
+                    format!("Vocal: {}", self.current_vocal)
                 )
             )
             .push(
                 Text::new(
-                    format!("Dance: {}", &self.card.dance_max_awakened)
+                    format!("Dance: {}", self.current_dance)
                 )
             )
             .push(
                 Text::new(
-                    format!("Visual: {}", &self.card.visual_max_awakened)
+                    format!("Visual: {}", self.current_visual)
                 )
             )
             .push(
@@ -105,5 +167,24 @@ impl CardView {
                     .align_items(Align::Start)
             )
             .into()
+    }
+
+    fn calc_level(&mut self, level: i32) {
+        self.current_vocal = CardView::interpolate(
+            level, 1, 90,
+            self.card.vocal_min_awakened, self.card.vocal_max_awakened
+        );
+        self.current_dance = CardView::interpolate(
+            level, 1, 90, 
+            self.card.dance_min_awakened, self.card.dance_max_awakened
+        );
+        self.current_visual = CardView::interpolate(
+            level, 1, 90, 
+            self.card.visual_min_awakened, self.card.visual_max_awakened
+        );
+    }
+
+    fn interpolate(xp: i32, x0: i32, x1: i32, y0: i32, y1: i32) -> i32 {
+        return y0 + ((y1 - y0)/(x1 - x0)) * (xp - x0)
     }
 }

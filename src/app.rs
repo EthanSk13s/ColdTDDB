@@ -2,7 +2,10 @@ use iced::{
     Container, Command, Application, Element, Column, Length, Text, image
 };
 
-use crate::components::{CardView, CardListPage, IdolList, FilterMessage};
+use crate::components::{
+    CardView, CardListPage, IdolList,
+    FilterMessage, CardMessage
+};
 use crate::db;
 
 pub struct App {
@@ -33,6 +36,7 @@ pub enum Message {
     CardPressed(i32),
     CardsListed(Result<CardListPage, db::Error>),
     FilterUpdate(FilterMessage),
+    CardUpdate(CardMessage),
     PickIdol(IdolList),
     NextPage,
     PreviousPage,
@@ -267,6 +271,11 @@ impl Application for App {
                     self.filter.to_owned()),
                     Message::CardsListed)
             }
+            Message::CardUpdate(card_message) => {
+                self.current_card.update(card_message);
+    
+                Command::none()
+            }
         }
     }
 
@@ -275,8 +284,10 @@ impl Application for App {
             AppState::CardLoading => Column::new()
                 .width(Length::Shrink)
                 .push(Text::new("Building and Getting Database").size(40)),
-            AppState::CardFound { card } => { 
-                self.current_card = card.clone();
+            AppState::CardFound { card } => {
+                if self.current_card.card.id != card.card.id { 
+                    self.current_card = card.clone();
+                }
                 Column::new()
                 .push(self.current_card.view())
             },
