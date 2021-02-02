@@ -41,6 +41,7 @@ pub enum Message {
     NextPage,
     PreviousPage,
     ReturnToList,
+    CardInputChange(String),
 }
 
 impl App {
@@ -274,6 +275,11 @@ impl Application for App {
             Message::CardUpdate(card_message) => {
                 self.current_card.update(card_message);
     
+                Command::none()
+            }
+            Message::CardInputChange(input) => {
+                self.current_card.text_input = input;
+
                 Command::none()
             }
         }

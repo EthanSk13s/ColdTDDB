@@ -1,15 +1,15 @@
 use iced::{Column, Element, Align, Text, 
     image, Image, button, Button, 
     Row, Length, scrollable, Scrollable,
+    text_input, TextInput
 };
 
 use crate::{db, princess};
 use crate::app::Message;
 
-// TODO: Make level be inputtable
-
 #[derive(Debug, Clone)]
 pub enum CardMessage {
+    ChangeLevel(String),
     IncreaseLevel,
     DecreaseLevel
 }
@@ -17,6 +17,7 @@ pub enum CardMessage {
 #[derive(Debug, Clone)]
 pub struct CardView {
     pub card: db::DbCard,
+    pub text_input: String,
     current_vocal: i32,
     current_dance: i32,
     current_visual: i32,
@@ -26,7 +27,8 @@ pub struct CardView {
     increase_level: button::State,
     decrease_level: button::State,
     current_level: i32,
-    scroll: scrollable::State
+    scroll: scrollable::State,
+    level_input: text_input::State,
 }
 
 impl CardView {
@@ -34,6 +36,7 @@ impl CardView {
         bg: image::Handle, card_art: image::Handle) -> CardView {
         CardView {
             card,
+            text_input: String::from("1"),
             current_vocal: 0,
             current_dance: 0,
             current_visual: 0,
@@ -43,17 +46,36 @@ impl CardView {
             decrease_level: button::State::new(),
             current_level: 1,
             back_button: button::State::new(),
-            scroll: scrollable::State::new()
+            scroll: scrollable::State::new(),
+            level_input: text_input::State::new(),
         }
     }
 
     pub fn update(&mut self, message: CardMessage) {
         match message {
+            CardMessage::ChangeLevel(new_level) => {
+                match new_level.parse::<i32>() {
+                    Ok(i) => {
+                        if i > 90 {
+                            self.current_level = 90;
+                            self.text_input = String::from("90")
+                        } else if i < 1 {
+                            self.current_level = 1;
+                            self.text_input = String::from("1")
+                        } else {
+                            self.current_level = i;
+                        }
+                    },
+                    Err(_) => self.current_level = self.current_level
+                }
+            }
             CardMessage::IncreaseLevel => {
                 self.current_level += 1;
+                self.text_input = self.current_level.to_string();
             }
             CardMessage::DecreaseLevel => {
                 self.current_level -= 1;
+                self.text_input = self.current_level.to_string();
             }
         }
     }
@@ -61,8 +83,8 @@ impl CardView {
     pub fn view(&mut self) -> Element<Message> {
         self.calc_level(self.current_level);
         let mut increase_level = Button::new(
-            &mut self.increase_level, Text::new("+")
-        );
+            &mut self.increase_level, Text::new("+").size(12)
+        ).min_height(20);
 
         increase_level = if self.current_level != 90 {
             increase_level.on_press(
@@ -72,9 +94,18 @@ impl CardView {
             increase_level
         };
 
+        let input = TextInput::new(
+            &mut self.level_input,
+            &self.current_level.to_string(),
+            &self.text_input,
+            Message::CardInputChange
+        ).on_submit(Message::CardUpdate(
+            CardMessage::ChangeLevel(self.text_input.clone())
+        )).width(Length::Units(30));
+
         let mut decrease_level = Button::new(
-            &mut self.decrease_level, Text::new("-")
-        );
+            &mut self.decrease_level, Text::new("-").size(12)
+        ).min_height(20);
 
         decrease_level = if self.current_level != 1 {
             decrease_level.on_press(
@@ -87,10 +118,11 @@ impl CardView {
         let values = Column::new()
             .push(
                 Row::new()
+                    .push(Text::new("Level: "))
                     .push(decrease_level)
-                    .push(Text::new(self.current_level.to_string()))
+                    .push(input)
                     .push(increase_level)
-            )
+            ).spacing(5)
             .push(
                 Text::new(
                     format!("Vocal: {}", self.current_vocal)
