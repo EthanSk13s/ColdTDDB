@@ -185,6 +185,6 @@ impl CardView {
     }
 
     fn interpolate(xp: i32, x0: i32, x1: i32, y0: i32, y1: i32) -> i32 {
-        return y0 + ((y1 - y0)/(x1 - x0)) * (xp - x0)
+        ((y0 as f32) + ((y1-y0) as f32 / (x1-x0) as f32) * ((xp - x0) as f32)) as i32
     }
 }
